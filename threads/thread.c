@@ -66,6 +66,7 @@ static void do_schedule(int status);
 static void schedule (void);
 static tid_t allocate_tid (void);
 static bool sleeping_less (const struct list_elem *a_, const struct list_elem *b_, void *aux UNUSED);
+void thread_sleep(int64_t wake_up_time);
 
 /* Returns true if T appears to point to a valid thread. */
 #define is_thread(t) ((t) != NULL && (t)->magic == THREAD_MAGIC)
@@ -255,9 +256,15 @@ thread_unblock (struct thread *t) {
 
 	old_level = intr_disable ();
 	ASSERT (t->status == THREAD_BLOCKED);
+	
+	// list_push_back (&ready_list, &t->elem);
 	list_insert_ordered (&ready_list, &t->elem, priority_sleeping_less, NULL);
-	//list_push_back (&ready_list, &t->elem);
 	t->status = THREAD_READY;
+	
+	if (thread_current() != idle_thread && t->priority > thread_current()->priority) {
+		thread_yield();
+	}
+	
 	intr_set_level (old_level);
 }
 
@@ -308,6 +315,7 @@ thread_exit (void) {
 	NOT_REACHED ();
 }
 
+
 /* Yields the CPU.  The current thread is not put to sleep and
    may be scheduled again immediately at the scheduler's whim. */
 void
@@ -319,7 +327,8 @@ thread_yield (void) {
 
 	old_level = intr_disable ();
 	if (curr != idle_thread)
-		list_insert_ordered (&sleeping_list, &curr->elem, sleeping_less, NULL);
+		// list_push_back (&ready_list, &curr->elem);
+		list_insert_ordered (&ready_list, &curr->elem, priority_sleeping_less, NULL);
 
 	do_schedule (THREAD_READY);
 	intr_set_level (old_level);
