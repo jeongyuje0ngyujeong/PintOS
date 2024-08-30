@@ -212,6 +212,11 @@ thread_create (const char *name, int priority,
 
 	/* Add to run queue. */
 	thread_unblock (t);
+	if (thread_current() != idle_thread 
+		&& t->priority > thread_current()->priority) 
+	{
+		thread_yield();
+	}
 
 	return tid;
 }
@@ -230,8 +235,8 @@ thread_block (void) {
 	thread_current ()->status = THREAD_BLOCKED;
 	schedule ();
 }
-static bool
-priority_sleeping_less (const struct list_elem *a_, const struct list_elem *b_,
+bool
+priority_less (const struct list_elem *a_, const struct list_elem *b_,
             void *aux UNUSED) 
 {
   const struct thread *a = list_entry (a_, struct thread, elem);
@@ -258,13 +263,9 @@ thread_unblock (struct thread *t) {
 	ASSERT (t->status == THREAD_BLOCKED);
 	
 	// list_push_back (&ready_list, &t->elem);
-	list_insert_ordered (&ready_list, &t->elem, priority_sleeping_less, NULL);
+	list_insert_ordered (&ready_list, &t->elem, priority_less, NULL);
 	t->status = THREAD_READY;
-	
-	if (thread_current() != idle_thread && t->priority > thread_current()->priority) {
-		thread_yield();
-	}
-	
+
 	intr_set_level (old_level);
 }
 
@@ -328,7 +329,7 @@ thread_yield (void) {
 	old_level = intr_disable ();
 	if (curr != idle_thread)
 		// list_push_back (&ready_list, &curr->elem);
-		list_insert_ordered (&ready_list, &curr->elem, priority_sleeping_less, NULL);
+		list_insert_ordered (&ready_list, &curr->elem, priority_less, NULL);
 
 	do_schedule (THREAD_READY);
 	intr_set_level (old_level);
@@ -339,8 +340,26 @@ thread_yield (void) {
 void
 thread_set_priority (int new_priority) {
 	thread_current ()->priority = new_priority;
-	thread_yield(); //priority > new_priority 일 때 실행한다는 조건을 달 수 있음
+	
+	int ready_list_front_priority;
+	if (!list_empty(&ready_list)) {
+		ready_list_front_priority = list_entry (list_front(&ready_list), struct thread, elem)->priority;
+
+		if (thread_current() != idle_thread && ready_list_front_priority > new_priority)
+		{
+			thread_yield();
+		}
+		
+	}
 }
+
+// /* 매개변수로 온 요소를 통해 쓰레드에 접근하여 해당 쓰레드의 우선순위를 반환하는 함수 */
+// /* semaphore_elem -> elem 을 매개변수로 받음 */
+// int
+// get_thread_priority_from_list (struct list_elem *waiters_elem) {
+// 	struct thread *check_thread = list_entry (waiters_elem, struct thread, elem);
+// 	return check_thread->priority;
+// }
 
 /* Returns the current thread's priority. */
 int
@@ -641,7 +660,7 @@ thread_sleep(int64_t wake_up_time) {
 }
 
 void
-thread_wake(){
+thread_wake() {
 	int64_t cur_time = timer_ticks();
 
 	while (!list_empty(&sleeping_list)) {
@@ -650,6 +669,11 @@ thread_wake(){
 		if (cur_time >= cur->wake_up_time) {
 			list_pop_front(&sleeping_list);
 			thread_unblock(cur);
+			if (thread_current() != idle_thread 
+				&& cur->priority > thread_current()->priority) 
+			{
+				thread_yield();
+			}
 		}
 		else return;
 	}
