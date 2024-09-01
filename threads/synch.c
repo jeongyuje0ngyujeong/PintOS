@@ -252,14 +252,52 @@ lock_release (struct lock *lock) {
 	ASSERT (lock_held_by_current_thread (lock));
 
 	lock->holder->donaion_cnt--;
-	if (lock->holder->donaion_cnt == 0)
+	struct thread *sema_front_thread;
+	if (lock->holder->donaion_cnt != 0 && !list_empty(&lock->semaphore.waiters))
+	{
+		sema_front_thread = list_entry (list_front(&lock->semaphore.waiters), struct thread, elem);
+		if (sema_front_thread->priority == lock->holder->priority)
+		{
+			lock->holder->priority = lock->before_priority;
+		} else
+		{
+			lock->holder->priority = sema_front_thread->priority;
+		}
+	} else 
 	{
 		lock->holder->priority = lock->holder->origin_priority;
 	}
-	else
-	{
-		lock->holder->priority = lock->before_priority;
-	}
+	
+
+
+	// if (lock->holder->donaion_cnt == 0)
+	// {
+	// 	lock->holder->priority = lock->holder->origin_priority;
+	// }
+	// else if (!list_empty(&lock->semaphore.waiters))
+	// {
+	// 	sema_front_thread = list_entry (list_front(&lock->semaphore.waiters), struct thread, elem);
+	// 	if (sema_front_thread->priority == lock->holder->priority)
+	// 	{
+	// 		lock->holder->priority = lock->before_priority;
+	// 	} else
+	// 	{
+	// 		lock->holder->priority = sema_front_thread->priority;
+	// 	}
+	// }
+	
+	// if (lock->holder->donaion_cnt != 0 && !list_empty(&lock->semaphore.waiters))
+	// {
+	// 	struct thread *before_thread = list_entry (list_front(&lock->semaphore.waiters), struct thread, elem);
+	// 	lock->holder->priority = before_thread->priority;
+	// } else if (lock->holder->donaion_cnt == 0)
+	// {
+	// 	lock->holder->priority = lock->holder->origin_priority;
+	// } else 
+	// {
+	// 	lock->holder->priority = lock->before_priority;
+	// }
+	
 	
 	lock->holder = NULL;
 	sema_up (&lock->semaphore);

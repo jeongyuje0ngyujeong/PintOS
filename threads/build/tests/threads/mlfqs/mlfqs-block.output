@@ -1,17 +1,11 @@
 Kernel command line: -q -mlfqs run mlfqs-block
-0 ~ 9fc00 1
-100000 ~ 13e0000 1
-Pintos booting with: 
-	base_mem: 0x0 ~ 0x9fc00 (Usable: 639 kB)
-	ext_mem: 0x100000 ~ 0x13e0000 (Usable: 19,328 kB)
-Calibrating timer...  15,232,000 loops/s.
-Boot complete.
-Executing 'mlfqs-block':
-Kernel PANIC at ../../tests/threads/tests.c:60 in run_test(): no test named "mlfqs-block"
-Call stack: 0x800421370d 0x8004216bbb 0x8004206636 0x8004206783 0x8004206120.
+Kernel PANIC at ../../lib/kernel/list.c:270 in list_front(): assertion `!list_empty (list)' failed.
+Call stack: 0x8004213758 0x80042140ba 0x800420a166 0x8004207977 0x800420698e 0x8004206068.
 The `backtrace' program can make call stacks useful.
 Read "Backtraces" in the "Debugging Tools" chapter
 of the Pintos documentation for more information.
-Timer: 31 ticks
-Thread: 0 idle ticks, 31 kernel ticks, 0 user ticks
-Console: 
+Timer: 0 ticks
+Thread: 0 idle ticks, 0 kernel ticks, 0 user ticks
+Console: 458 characters output
+Keyboard: 0 keys pressed
+Powering off...
