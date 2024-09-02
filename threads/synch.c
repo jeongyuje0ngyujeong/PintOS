@@ -218,9 +218,16 @@ lock_acquire (struct lock *lock) {
 
 	/* lock acquire는 접근하려는 thread가 현재 thread보다 우선순위가 더 높을 때 실행 됨! */
 	if (lock->holder != NULL) {
-		if (list_empty(&lock->semaphore.waiters)) lock->before_priority = lock->holder->priority;
+		if (list_empty(&lock->semaphore.waiters)) {
+			lock->before_priority = lock->holder->priority;
+		}
 		lock->holder->priority = thread_current()->priority;
+		if (lock->holder->waiting_lock != NULL) {
+		// while (lock->hol){
+			lock->holder->waiting_lock->holder->priority = lock->holder->priority;
+		}
 		lock->holder->donation_cnt++;
+		thread_current()->waiting_lock = lock;
 	}
 	sema_down (&lock->semaphore);
 	lock->holder = thread_current ();
