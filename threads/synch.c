@@ -98,6 +98,16 @@ sema_try_down (struct semaphore *sema) {
 
 	return success;
 }
+bool
+for_max_priority_less (const struct list_elem *a_, const struct list_elem *b_,
+            void *aux UNUSED) 
+{
+  const struct thread *a = list_entry (a_, struct thread, elem);
+  const struct thread *b = list_entry (b_, struct thread, elem);
+  
+  return a->priority < b->priority;
+}
+
 
 /* Up or "V" operation on a semaphore.  Increments SEMA's value
    and wakes up one thread of those waiting for SEMA, if any.
@@ -114,10 +124,13 @@ sema_up (struct semaphore *sema) {
 	struct thread *sema_front;
 	if (!list_empty (&sema->waiters))
 	{
-		sema_front = list_entry (list_pop_front (&sema->waiters), struct thread, elem);
+		// sema_front = list_entry (list_pop_front (&sema->waiters), struct thread, elem);
+		struct list_elem *sema_max = list_max(&sema->waiters, for_max_priority_less, NULL);
+		list_remove(sema_max);
+		sema_front = list_entry (sema_max, struct thread, elem);
 		thread_unblock (sema_front);
 		sema->value++;
-
+		// msg ("sema front priority: %d", sema_front->priority)
 		if (sema_front->priority > thread_current()->priority)
 		{
 			thread_yield();
@@ -183,7 +196,7 @@ lock_init (struct lock *lock) {
 	ASSERT (lock != NULL);
 
 	lock->holder = NULL;
-	lock->before_priority = 0;
+	lock->before_priority = -1;
 	
 	sema_init (&lock->semaphore, 1);
 }
@@ -202,21 +215,16 @@ lock_acquire (struct lock *lock) {
 	ASSERT (lock != NULL);
 	ASSERT (!intr_context ());
 	ASSERT (!lock_held_by_current_thread (lock));
-	// msg ("before sema_down sema: %u:", &lock->semaphore.value);
+
 	/* lock acquire는 접근하려는 thread가 현재 thread보다 우선순위가 더 높을 때 실행 됨! */
 	if (lock->holder != NULL) {
-		if (list_size(&lock->semaphore.waiters) == 0)
-		{
-			lock->before_priority = lock->holder->priority;
-		}
-
+		if (list_empty(&lock->semaphore.waiters)) lock->before_priority = lock->holder->priority;
 		lock->holder->priority = thread_current()->priority;
-		lock->holder->donaion_cnt++;
+		lock->holder->donation_cnt++;
 	}
-
 	sema_down (&lock->semaphore);
 	lock->holder = thread_current ();
-	lock->before_priority = thread_current()->priority;
+	// lock->before_priority = thread_current()->priority;
 	
 }
 
@@ -251,53 +259,33 @@ lock_release (struct lock *lock) {
 	ASSERT (lock != NULL);
 	ASSERT (lock_held_by_current_thread (lock));
 
-	lock->holder->donaion_cnt--;
-	struct thread *sema_front_thread;
-	if (lock->holder->donaion_cnt != 0 && !list_empty(&lock->semaphore.waiters))
-	{
-		sema_front_thread = list_entry (list_front(&lock->semaphore.waiters), struct thread, elem);
-		if (sema_front_thread->priority == lock->holder->priority)
+	/* 기부 받았을 때만 cnt --
+		1. before는 기부 받았을 때만 priority를 업데이트 해주기 때문에 여부 분별 가능
+		if (lock->before_priority > 0)
+		2. donation cnt 또한 기부 받을 때만 업데이트 해주기 때문에 여부 분별이 가능하다고 생각했으나
+		   해당 lock에 대해 donation을 받았을 때만 donation cnt를 빼야하므로 안됨 
+		if (lock->holder->donation_cnt >= 0)
+	*/
+		
+	if (lock->before_priority > -1){
+		lock->holder->donation_cnt--;
+		struct thread *sema_front_thread;
+
+		if (lock->holder->donation_cnt == 0)
 		{
-			lock->holder->priority = lock->before_priority;
-		} else
-		{
-			lock->holder->priority = sema_front_thread->priority;
+			lock->holder->priority = lock->holder->origin_priority;
+			
 		}
-	} else 
-	{
-		lock->holder->priority = lock->holder->origin_priority;
-	}
-	
-
-
-	// if (lock->holder->donaion_cnt == 0)
-	// {
-	// 	lock->holder->priority = lock->holder->origin_priority;
-	// }
-	// else if (!list_empty(&lock->semaphore.waiters))
-	// {
-	// 	sema_front_thread = list_entry (list_front(&lock->semaphore.waiters), struct thread, elem);
-	// 	if (sema_front_thread->priority == lock->holder->priority)
-	// 	{
-	// 		lock->holder->priority = lock->before_priority;
-	// 	} else
-	// 	{
-	// 		lock->holder->priority = sema_front_thread->priority;
-	// 	}
-	// }
-	
-	// if (lock->holder->donaion_cnt != 0 && !list_empty(&lock->semaphore.waiters))
-	// {
-	// 	struct thread *before_thread = list_entry (list_front(&lock->semaphore.waiters), struct thread, elem);
-	// 	lock->holder->priority = before_thread->priority;
-	// } else if (lock->holder->donaion_cnt == 0)
-	// {
-	// 	lock->holder->priority = lock->holder->origin_priority;
-	// } else 
-	// {
-	// 	lock->holder->priority = lock->before_priority;
-	// }
-	
+		else if (!list_empty(&lock->semaphore.waiters))
+		{	
+			sema_front_thread = list_entry (list_front(&lock->semaphore.waiters), struct thread, elem);
+			/* 나한테 기부를 준 놈한테만 다시 이전 값으로 복원해주면 되는 것임. 만약에 다르면 나는 이 놈한테 줄 필요가 없음. */
+			if (sema_front_thread->priority == lock->holder->priority){
+				lock->holder->priority = lock->before_priority;
+				
+			}	
+		}
+	} 
 	
 	lock->holder = NULL;
 	sema_up (&lock->semaphore);

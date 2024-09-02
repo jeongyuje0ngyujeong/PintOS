@@ -215,6 +215,7 @@ thread_create (const char *name, int priority,
 	if (thread_current() != idle_thread 
 		&& t->priority > thread_current()->priority) 
 	{
+		// msg ("thread current priority : %d, t priority: %d", thread_current()->priority, t->priority);
 		thread_yield();
 	}
 
@@ -456,7 +457,7 @@ init_thread (struct thread *t, const char *name, int priority) {
 	t->tf.rsp = (uint64_t) t + PGSIZE - sizeof (void *);
 	t->priority = priority;
 	t->origin_priority = priority;
-	t->donaion_cnt = 0;
+	t->donation_cnt = 0;
 	t->magic = THREAD_MAGIC;
 }
 
