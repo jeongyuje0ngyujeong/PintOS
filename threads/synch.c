@@ -121,17 +121,18 @@ sema_up (struct semaphore *sema) {
 
 	old_level = intr_disable ();
 	
-	struct thread *sema_front;
 	if (!list_empty (&sema->waiters))
 	{
 		// sema_front = list_entry (list_pop_front (&sema->waiters), struct thread, elem);
 		struct list_elem *sema_max = list_max(&sema->waiters, for_max_priority_less, NULL);
 		list_remove(sema_max);
-		sema_front = list_entry (sema_max, struct thread, elem);
-		thread_unblock (sema_front);
+
+		struct thread *sema_max_thread = list_entry (sema_max, struct thread, elem);
+		thread_unblock (sema_max_thread);
 		sema->value++;
+		// msg ("sema_max_thread priority: %d\n", sema_max_thread->priority);
 		// msg ("sema front priority: %d", sema_front->priority)
-		if (sema_front->priority > thread_current()->priority)
+		if (sema_max_thread->priority > thread_current()->priority)
 		{
 			thread_yield();
 		}
@@ -222,9 +223,11 @@ lock_acquire (struct lock *lock) {
 			lock->before_priority = lock->holder->priority;
 		}
 		lock->holder->priority = thread_current()->priority;
-		if (lock->holder->waiting_lock != NULL) {
-		// while (lock->hol){
-			lock->holder->waiting_lock->holder->priority = lock->holder->priority;
+		struct lock *checking_lock = lock->holder->waiting_lock;
+		// if (lock->holder->waiting_lock != NULL) {
+		while (checking_lock != NULL){
+			checking_lock->holder->priority = lock->holder->priority;
+			checking_lock = checking_lock->holder->waiting_lock;
 		}
 		lock->holder->donation_cnt++;
 		thread_current()->waiting_lock = lock;
@@ -292,8 +295,10 @@ lock_release (struct lock *lock) {
 				
 			}	
 		}
+		/* lock이 해제되면 초기값으로 돌려줘야함 */
+		lock->before_priority = -1;
 	} 
-	
+	// msg ("lock holder priority: %d\n", lock->holder->priority);
 	lock->holder = NULL;
 	sema_up (&lock->semaphore);
 }
