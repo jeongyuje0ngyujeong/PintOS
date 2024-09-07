@@ -126,8 +126,21 @@ timer_print_stats (void) {
 static void
 timer_interrupt (struct intr_frame *args UNUSED) {
 	ticks++;
-	thread_tick ();
 	thread_wake();
+
+	if (thread_mlfqs){
+		if (!is_idle())
+			thread_current()->recent_cpu += 1<<14;
+		if (ticks % TIMER_FREQ == 0) {
+			thread_update_load_avg();
+			thread_all_update_recent_cpu ();
+		}
+		if (ticks % 4 == 0) {
+			/* 모든 스레드 우선순위 업데이트 */
+			thread_all_update_priority();
+		}
+	}
+	thread_tick ();
 }
 
 /* Returns true if LOOPS iterations waits for more than one timer

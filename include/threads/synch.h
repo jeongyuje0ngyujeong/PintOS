@@ -20,6 +20,7 @@ void sema_self_test (void);
 struct lock {
 	struct thread *holder;      /* Thread holding lock (for debugging). */
 	struct semaphore semaphore; /* Binary semaphore controlling access. */
+	int before_priority;		 /* donate 받기 전 priority 저장 */
 };
 
 void lock_init (struct lock *);
@@ -37,6 +38,8 @@ void cond_init (struct condition *);
 void cond_wait (struct condition *, struct lock *);
 void cond_signal (struct condition *, struct lock *);
 void cond_broadcast (struct condition *, struct lock *);
+
+bool max_less (const struct list_elem *a_, const struct list_elem *b_, void *aux);
 
 /* Optimization barrier.
  *

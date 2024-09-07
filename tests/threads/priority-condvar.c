@@ -22,17 +22,19 @@ test_priority_condvar (void)
   ASSERT (!thread_mlfqs);
 
   lock_init (&lock);
+  // msg ("sema val: %u", lock.semaphore.value);
   cond_init (&condition);
 
   thread_set_priority (PRI_MIN);
-  for (i = 0; i < 10; i++) 
+  for (i = 0; i < 10; i++)
     {
       int priority = PRI_DEFAULT - (i + 7) % 10 - 1;
       char name[16];
       snprintf (name, sizeof name, "priority %d", priority);
+      // msg ("lock holder: %s", &lock.holder->name);
       thread_create (name, priority, priority_condvar_thread, NULL);
     }
-
+  
   for (i = 0; i < 10; i++) 
     {
       lock_acquire (&lock);

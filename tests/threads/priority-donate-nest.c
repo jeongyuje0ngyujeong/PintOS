@@ -66,7 +66,7 @@ medium_thread_func (void *locks_)
   struct locks *locks = locks_;
 
   lock_acquire (locks->b);
-  lock_acquire (locks->a);
+  lock_acquire (locks->a); //med block
 
   msg ("Medium thread should have priority %d.  Actual priority: %d.",
        PRI_DEFAULT + 2, thread_get_priority ());

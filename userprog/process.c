@@ -184,6 +184,8 @@ process_exec (void *f_name) {
 	if (!success)
 		return -1;
 
+	hex_dump(_if.rsp, _if.rsp, USER_STACK - _if.rsp, true);
+
 	/* Start switched process. */
 	do_iret (&_if);
 	NOT_REACHED ();
@@ -204,6 +206,11 @@ process_wait (tid_t child_tid UNUSED) {
 	/* XXX: Hint) The pintos exit if process_wait (initd), we recommend you
 	 * XXX:       to add infinite loop here before
 	 * XXX:       implementing the process_wait. */
+	while (1)
+	{
+		
+	}
+	
 	return -1;
 }
 
@@ -329,6 +336,17 @@ load (const char *file_name, struct intr_frame *if_) {
 	bool success = false;
 	int i;
 
+	char *token;
+	char *argv[128];
+	char *save_ptr;
+	int argc = 0;
+	
+	for (token = strtok_r (file_name, " ", &save_ptr); token != NULL; token = strtok_r(NULL, " ", &save_ptr))
+	{	
+		argv[argc] = token;
+		argc++;
+	}
+
 	/* Allocate and activate page directory. */
 	t->pml4 = pml4_create ();
 	if (t->pml4 == NULL)
@@ -336,7 +354,7 @@ load (const char *file_name, struct intr_frame *if_) {
 	process_activate (thread_current ());
 
 	/* Open executable file. */
-	file = filesys_open (file_name);
+	file = filesys_open (argv[0]);
 	if (file == NULL) {
 		printf ("load: %s: open failed\n", file_name);
 		goto done;
@@ -414,9 +432,31 @@ load (const char *file_name, struct intr_frame *if_) {
 	/* Start address. */
 	if_->rip = ehdr.e_entry;
 
-	/* TODO: Your code goes here.
-	 * TODO: Implement argument passing (see project2/argument_passing.html). */
+	uintptr_t addr[128];
+	for (int i = argc - 1; i >= 0; i--)
+	{
+		size_t size = strlen(argv[i]) + 1;
+		addr[i] = if_->rsp - size;
+		if_->rsp = addr[i];
+		strlcpy(if_->rsp, argv[i], size);	
+	}
 
+	size_t ptr_size = 8;
+	if_->rsp = ROUND_DOWN(if_->rsp, ptr_size);
+	if_->rsp -= ptr_size;
+	memset(if_->rsp, 0, ptr_size);
+
+	for (int i = argc - 1; i >= 0; i--)
+	{
+		if_->rsp -= ptr_size;
+		memcpy(if_->rsp, &addr[i], ptr_size);
+	}
+	if_->rsp = if_->rsp - ptr_size;
+	memset(if_->rsp, 0, ptr_size);
+
+	if_->R.rsi = if_->rsp + ptr_size;
+	if_->R.rdi = argc;
+	
 	success = true;
 
 done:

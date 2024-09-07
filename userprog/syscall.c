@@ -42,5 +42,41 @@ void
 syscall_handler (struct intr_frame *f UNUSED) {
 	// TODO: Your implementation goes here.
 	printf ("system call!\n");
+
+	switch (f->R.rax)
+	{
+	case SYS_HALT:     			/* (0) Halt the operating system. */
+		break;
+	case SYS_EXIT:				/* (1) Terminate this process. */
+		break;                  
+	case SYS_FORK:              /* (2) Clone current process. */
+		break;
+	case SYS_EXEC:              /* (3) Switch current process. */
+		break;
+	case SYS_WAIT:              /* (4) Wait for a child process to die. */
+		break;
+	case SYS_CREATE:			/* (5) Create a file. */
+		break;                 
+	case SYS_REMOVE:            /* (6) Delete a file. */
+		break;
+	case SYS_OPEN:              /* (7) Open a file. */
+		break;
+	case SYS_FILESIZE:			/* (8) Obtain a file's size. */
+		break;               
+	case SYS_READ:              /* (9) Read from a file. */
+		break;
+	case SYS_WRITE:				/* (10) Write to a file. */
+		break;                  
+	case SYS_SEEK:              /* (11) Change position in a file. */
+		break;
+	case SYS_TELL:				/* (12) Report current position in a file. */
+		break;                   
+	case SYS_CLOSE:
+		break;
+	
+	
+	default:
+		break;
+	}
 	thread_exit ();
 }

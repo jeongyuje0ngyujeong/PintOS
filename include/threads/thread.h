@@ -9,6 +9,7 @@
 #include "vm/vm.h"
 #endif
 
+#define USERPROG
 
 /* States in a thread's life cycle. */
 enum thread_status {
@@ -91,10 +92,16 @@ struct thread {
 	enum thread_status status;          /* Thread state. */
 	char name[16];                      /* Name (for debugging purposes). */
 	int priority;                       /* Priority. */
-	int64_t wake_up_time;
-
+	int64_t wake_up_time;				/* 일어날 시간 저장 */
+	int origin_priority;				/* donate 받기 전 최초의 priority */
+	int donation_cnt;					/* priority donation 받은 수 체킹 */
+	struct lock *waiting_lock;			/* 내가 waiting 중인 lock */
+	int nice;
+	int recent_cpu;
+	
 	/* Shared between thread.c and synch.c. */
 	struct list_elem elem;              /* List element. */
+	struct list_elem all_elem;			
 
 #ifdef USERPROG
 	/* Owned by userprog/process.c. */
@@ -114,6 +121,7 @@ struct thread {
    If true, use multi-level feedback queue scheduler.
    Controlled by kernel command-line option "-o mlfqs". */
 extern bool thread_mlfqs;
+struct list all_thread;
 
 void thread_init (void);
 void thread_start (void);
@@ -143,5 +151,21 @@ int thread_get_recent_cpu (void);
 int thread_get_load_avg (void);
 
 void do_iret (struct intr_frame *tf);
+
+bool priority_less (const struct list_elem *a_, const struct list_elem *b_, void *aux UNUSED);
+// int get_thread_priority_from_list (struct condition *cond);
+
+int convert_to_fixed_point (int real_num);
+int convert_to_int (int f_num1);
+int multiply_floats (int f_num1, int f_num2);
+int devide_floats (int f_num1, int f_num2);
+void thread_update_load_avg (void);
+int ready_threads (void);
+void thread_update_recent_cpu (struct thread *t);
+bool is_idle(void);
+void thread_update_priority (struct thread *t);
+void thread_all_update_priority (void);
+void thread_all_update_recent_cpu (void);
+void thread_wake(void);
 
 #endif /* threads/thread.h */
