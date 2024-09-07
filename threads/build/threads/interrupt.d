@@ -9,4 +9,5 @@ threads/interrupt.o: ../../threads/interrupt.c \
  ../../include/threads/mmu.h ../../include/threads/pte.h \
  ../../include/threads/vaddr.h ../../include/threads/loader.h \
  ../../include/devices/timer.h ../../include/lib/round.h \
- ../../include/intrinsic.h ../../include/threads/mmu.h
+ ../../include/intrinsic.h ../../include/threads/mmu.h \
+ ../../include/userprog/gdt.h
