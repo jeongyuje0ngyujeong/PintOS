@@ -132,7 +132,7 @@ sema_up (struct semaphore *sema) {
 		sema->value++;
 		// msg ("sema_max_thread priority: %d\n", sema_max_thread->priority);
 		// msg ("sema front priority: %d", sema_front->priority)
-		if (sema_max_thread->priority > thread_current()->priority)
+		if (sema_max_thread->priority > thread_current()->priority && !intr_context ())
 		{
 			thread_yield();
 		}
