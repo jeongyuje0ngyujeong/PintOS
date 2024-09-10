@@ -75,13 +75,11 @@ write(struct intr_frame *f) {
 	if (fd == 1) {
 		putbuf((char *)buffer, size);
 		f->R.rax = size;
-		
 
 	} else {
 		struct file *cur_file = thread_current()->fd_table[fd];
 		size_t real_size = file_write(cur_file, (char *)buffer, size);
 		f->R.rax = real_size;
-		// return real_size;
 	}
 }
 
@@ -90,8 +88,6 @@ read(struct intr_frame *f) {
 	int fd = f->R.rdi;
 	void *buffer = f->R.rsi;
 	size_t size = f->R.rdx;
-	// printf("fd: %d\n", fd);
-	// printf("read file: %p\n", thread_current()->fd_table[fd]);
 	
 	if (fd == 0 && buffer != NULL) {
 		f->R.rax = input_getc();
@@ -103,7 +99,6 @@ read(struct intr_frame *f) {
 		return;	
 	}
 	else {
-		f->R.rax = -1;
 		thread_current()->file_status = -1;
 		thread_exit();
 		return;
@@ -114,14 +109,30 @@ void
 open(struct intr_frame *f) {
 	struct thread *t = thread_current();
 	char *file_name = f->R.rdi;
-	struct file *cur_file = filesys_open(file_name);
 
-	int i = 3;
-	while (t->fd_table[i] != NULL)
-	{
-		i++;
+	
+	// if (file_name == NULL || file_name[0] == '\0')
+	if (file_name == NULL)
+	{	
+		thread_current()->file_status = -1;
+		thread_exit();
+		return;
 	}
 
+	struct file *cur_file = filesys_open(file_name);
+
+	if (cur_file == NULL)
+	{
+		/* 	안 해도 됨
+			thread_current()->file_status = -1; */
+		f->R.rax = -1;
+		return;
+	}
+	
+	int i = 3;
+	while (t->fd_table[i] != NULL)
+		i++;
+	
 	t->fd_table[i] = cur_file;
 	f->R.rax = i;
 }
