@@ -7,9 +7,14 @@
 #include "userprog/gdt.h"
 #include "threads/flags.h"
 #include "intrinsic.h"
+#include "filesys/file.h"
+#include "filesys/filesys.h"
+
 
 void syscall_entry (void);
 void syscall_handler (struct intr_frame *);
+
+// void open(struct intr_frame *f);
 
 /* System call.
  *
@@ -36,19 +41,118 @@ syscall_init (void) {
 	write_msr(MSR_SYSCALL_MASK,
 			FLAG_IF | FLAG_TF | FLAG_DF | FLAG_IOPL | FLAG_AC | FLAG_NT);
 }
+void
+exit(struct intr_frame *f) {
+	struct thread *curr = thread_current();
+	// printf("current thread: %p\n", curr);
+	curr->file_status = f->R.rdi;
+	
+	thread_exit();
+}
+
+void
+create(struct intr_frame *f) {
+	char *cur_file = f->R.rdi;
+	if (cur_file == NULL)
+	{
+		thread_current()->file_status = -1;
+		f->R.rax = 0;
+		thread_exit();
+		return;
+	}
+	
+	unsigned size = f->R.rsi;
+	f->R.rax = filesys_create (cur_file, size); 
+
+}
+
+void 
+write(struct intr_frame *f) {
+	int fd = f->R.rdi;
+	const void *buffer = f->R.rsi;
+	size_t size = f->R.rdx;
+
+	if (fd == 1) {
+		putbuf((char *)buffer, size);
+		f->R.rax = size;
+		
+
+	} else {
+		struct file *cur_file = thread_current()->fd_table[fd];
+		size_t real_size = file_write(cur_file, (char *)buffer, size);
+		f->R.rax = real_size;
+		// return real_size;
+	}
+}
+
+void
+read(struct intr_frame *f) {
+	int fd = f->R.rdi;
+	void *buffer = f->R.rsi;
+	size_t size = f->R.rdx;
+	// printf("fd: %d\n", fd);
+	// printf("read file: %p\n", thread_current()->fd_table[fd]);
+	
+	if (fd == 0 && buffer != NULL) {
+		f->R.rax = input_getc();
+		return;
+	}
+	else if (2 < fd && fd < 30 && buffer != NULL) {
+		struct file *file = thread_current()->fd_table[fd];
+		f->R.rax = file_read(file, (char *)buffer, size);
+		return;	
+	}
+	else {
+		f->R.rax = -1;
+		thread_current()->file_status = -1;
+		thread_exit();
+		return;
+	}
+}
+
+void
+open(struct intr_frame *f) {
+	struct thread *t = thread_current();
+	char *file_name = f->R.rdi;
+	struct file *cur_file = filesys_open(file_name);
+
+	int i = 3;
+	while (t->fd_table[i] != NULL)
+	{
+		i++;
+	}
+
+	t->fd_table[i] = cur_file;
+	f->R.rax = i;
+}
+
+void
+filesize(struct intr_frame *f) {
+	int fd = f->R.rdi;
+	if (fd < 3) {
+		thread_current()->file_status = -1;
+		f->R.rax = -1;
+
+	} else {
+		f->R.rax = file_length(thread_current()->fd_table[fd]);
+		
+	}
+}
+
 
 /* The main system call interface */
 void
 syscall_handler (struct intr_frame *f UNUSED) {
-	// TODO: Your implementation goes here.
-	printf ("system call!\n");
-
+	// printf ("system call!\n");
+	thread_current()->is_user = true;
 	switch (f->R.rax)
 	{
 	case SYS_HALT:     			/* (0) Halt the operating system. */
+		power_off();
 		break;
 	case SYS_EXIT:				/* (1) Terminate this process. */
-		break;                  
+		exit(f);
+		break;                
 	case SYS_FORK:              /* (2) Clone current process. */
 		break;
 	case SYS_EXEC:              /* (3) Switch current process. */
@@ -56,16 +160,21 @@ syscall_handler (struct intr_frame *f UNUSED) {
 	case SYS_WAIT:              /* (4) Wait for a child process to die. */
 		break;
 	case SYS_CREATE:			/* (5) Create a file. */
+		create(f);
 		break;                 
 	case SYS_REMOVE:            /* (6) Delete a file. */
 		break;
 	case SYS_OPEN:              /* (7) Open a file. */
+		open(f);
 		break;
 	case SYS_FILESIZE:			/* (8) Obtain a file's size. */
+		filesize(f);
 		break;               
 	case SYS_READ:              /* (9) Read from a file. */
+		read(f);
 		break;
 	case SYS_WRITE:				/* (10) Write to a file. */
+		write(f);
 		break;                  
 	case SYS_SEEK:              /* (11) Change position in a file. */
 		break;
@@ -78,5 +187,5 @@ syscall_handler (struct intr_frame *f UNUSED) {
 	default:
 		break;
 	}
-	thread_exit ();
+	// thread_exit ();
 }
