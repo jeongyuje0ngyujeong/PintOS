@@ -552,7 +552,30 @@ init_thread (struct thread *t, const char *name, int priority) {
 	}
 
 	list_push_back(&all_thread, &t->all_elem);
-	
+
+	#ifdef USERPROG
+		for (int i = 0; i < 30; i++)
+		{
+			t->fd_table[i] = NULL;
+			t->childern[i] = NULL;
+		}
+
+		t->file_status = 0;
+		t->is_user = false;
+		t->wait_sema = NULL;
+		if (name != "main") {
+			t->parent_thread = thread_current();
+			for (int i = 0; i < 30; i++) {
+				if (thread_current()->childern[i] == NULL)
+				{
+					thread_current()->childern[i] = t;
+					break;
+				}
+			}
+		}
+		else t->parent_thread = NULL;
+		
+	#endif
 }
 
 /* Chooses and returns the next thread to be scheduled.  Should
