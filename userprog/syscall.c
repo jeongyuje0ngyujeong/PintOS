@@ -49,169 +49,209 @@ is_valid_fd (int fd) {
 }
 
 void
-exit(struct intr_frame *f) {
+exit(int status) {
 	struct thread *curr = thread_current();
-	curr->file_status = f->R.rdi;
+	curr->file_status = status;
 	
 	thread_exit();
 }
 
-void
-create(struct intr_frame *f) {
-	char *cur_file = f->R.rdi;
-
+bool
+create(char *cur_file, size_t size) {
 	if (cur_file == NULL || !is_user_vaddr(cur_file) || !pml4_get_page(thread_current()->pml4, cur_file))
 	{
 		thread_current()->file_status = -1;
 		thread_exit();
 		return;
 	}
-	
-	unsigned size = f->R.rsi;
-	f->R.rax = filesys_create (cur_file, size); 
-
+	return filesys_create (cur_file, size); 
 }
 
-void 
-write(struct intr_frame *f) {
-	int fd = f->R.rdi;
-	const void *buffer = f->R.rsi;
-	size_t size = f->R.rdx;
-
+int 
+write(int fd, void *buffer, size_t size) {
 	struct thread *curr = thread_current();
 
 	if (fd == 1) {
 		putbuf((char *)buffer, size);
-		f->R.rax = size;
+		return size;
 
 	} else if (is_valid_fd(fd)) {
 		struct file *cur_file = thread_current()->fd_table[fd];
 		size_t real_size = file_write(cur_file, (char *)buffer, size);
-		f->R.rax = real_size;
+		return real_size;
 	}
 }
 
-void
-read(struct intr_frame *f) {
-	int fd = f->R.rdi;
-	void *buffer = f->R.rsi;
-	size_t size = f->R.rdx;	
-	
-	if (fd == 0 && buffer != NULL) {
-		f->R.rax = input_getc();
-		return;
-	}
-	else if (2 < fd && fd < 30 && buffer != NULL) {
+int
+read(int fd, void *buffer, size_t size) {
+	if (fd == 0 && buffer != NULL) return input_getc();
+	else if (2 < fd && fd < 30 && buffer != NULL) 
+	{
 		struct file *file = thread_current()->fd_table[fd];
-		f->R.rax = file_read(file, (char *)buffer, size);
-		return;	
+		return file_read(file, (char *)buffer, size);
 	}
-	else {
+	else 
+	{
 		thread_current()->file_status = -1;
 		thread_exit();
 		return;
 	}
 }
 
-void
-open(struct intr_frame *f) {
+int
+open(char *file_name) {
 	struct thread *t = thread_current();
-	char *file_name = f->R.rdi;
-	// printf("file_name: %s\n",file_name);
-	// if (file_name == NULL || is_invalid_file(filesys_open(file_name))) exit_on_invalid_file();
-	//  if (is_invalid_file(file_name)) exit_on_invalid_file();
+
 	if (file_name == NULL || !is_user_vaddr(file_name) || !pml4_get_page(thread_current()->pml4, file_name))
 	{	
 		thread_current()->file_status = -1;
 		thread_exit();
-		return;
+		
 	}
 
 	struct file *cur_file = filesys_open(file_name);
 	
-	if (cur_file == NULL)
-	{
-		f->R.rax = -1;
-		return;
-	}
+	if (cur_file == NULL) return -1;
 	
 	int i = 3;
 	while (t->fd_table[i] != NULL)
 		i++;
 	
 	t->fd_table[i] = cur_file;
-	f->R.rax = i;
+	return i;
 }
 
-void
-filesize(struct intr_frame *f) {
-	int fd = f->R.rdi;
+int
+filesize(int fd) {
 	if (fd < 3) {
-	
 		thread_current()->file_status = -1;
-		f->R.rax = -1;
+		return -1;
+	} 
+	else return file_length(thread_current()->fd_table[fd]);	
+	
+}
 
-	} else {
-		f->R.rax = file_length(thread_current()->fd_table[fd]);
-		
-	}
+bool
+remove (struct intr_frame *f) {
+	char *file_name = f->R.rdi;
+	return filesys_remove(file_name);
 }
 
 void
-close(struct intr_frame *f) {
-	int fd = f->R.rdi;
+seek(int fd, size_t position) {
+	struct file *file = thread_current()->fd_table[fd];
+	file_seek(file, position);
+}
+
+off_t
+tell(int fd) {
+	struct file *file = thread_current()->fd_table[fd];
+	return file_tell(file);
+}
+
+void
+close(int fd) {
 	if (!is_valid_fd(fd)) return;
 
 	file_close(thread_current()->fd_table[fd]);
 	thread_current()->fd_table[fd] = NULL;
-	
-	//else f->R.rax = -1;
+
 }
 
 
 /* The main system call interface */
 void
 syscall_handler (struct intr_frame *f UNUSED) {
-	// printf ("system call!\n");
 	thread_current()->is_user = true;
-	switch (f->R.rax)
-	{
+
+	switch (f->R.rax) {
 	case SYS_HALT:     			/* (0) Halt the operating system. */
+	{
 		power_off();
 		break;
+	}
 	case SYS_EXIT:				/* (1) Terminate this process. */
-		exit(f);
-		break;                
+	{
+		int status = f->R.rdi;
+		exit(status);
+		break;
+	} 
+
 	case SYS_FORK:              /* (2) Clone current process. */
 		break;
+
 	case SYS_EXEC:              /* (3) Switch current process. */
 		break;
+
 	case SYS_WAIT:              /* (4) Wait for a child process to die. */
 		break;
+
 	case SYS_CREATE:			/* (5) Create a file. */
-		create(f);
-		break;                 
+	{
+		char *cur_file = f->R.rdi;
+		size_t size = f->R.rsi;
+		f->R.rax = create(cur_file, size);
+		break; 
+	}     
+
 	case SYS_REMOVE:            /* (6) Delete a file. */
+	{
+		char *file = f->R.rdi;
+		f->R.rax = remove(file);
 		break;
+	}
+
 	case SYS_OPEN:              /* (7) Open a file. */
-		open(f);
+	{
+		char *file_name = f->R.rdi;
+		f->R.rax = open(file_name);
 		break;
+	}
+
 	case SYS_FILESIZE:			/* (8) Obtain a file's size. */
-		filesize(f);
-		break;               
+	{
+		int fd = f->R.rdi;
+		f->R.rax = filesize(fd);
+		break;   
+	}   
+
 	case SYS_READ:              /* (9) Read from a file. */
-		read(f);
+	{
+		int fd = f->R.rdi;
+		void *buffer = f->R.rsi;
+		size_t size = f->R.rdx;	
+	 	f->R.rax = read(fd, buffer, size);
 		break;
+	}
+
 	case SYS_WRITE:				/* (10) Write to a file. */
-		write(f);
-		break;                  
+	{
+		int fd = f->R.rdi;
+		const void *buffer = f->R.rsi;
+		size_t size = f->R.rdx;
+		f->R.rax = write(fd, buffer, size);
+		break;  
+	}    
+
 	case SYS_SEEK:              /* (11) Change position in a file. */
+	{
+		int fd = f->R.rdi;
+		size_t position = f->R.rsi;
+		seek(fd, position);
 		break;
+	}
 	case SYS_TELL:				/* (12) Report current position in a file. */
-		break;                   
+	{
+		int fd = f->R.rdi;
+		f->R.rax = tell(fd);
+		break;  
+	}
 	case SYS_CLOSE:
-		close(f);
+	{
+		int fd = f->R.rdi;
+		close(fd);
 		break;
+	}
 	
 	default:
 		break;

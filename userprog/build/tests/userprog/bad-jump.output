@@ -4,7 +4,7 @@ Kernel command line: -q -f put bad-jump run bad-jump
 Pintos booting with: 
 	base_mem: 0x0 ~ 0x9fc00 (Usable: 639 kB)
 	ext_mem: 0x100000 ~ 0x13e0000 (Usable: 19,328 kB)
-Calibrating timer...  13,094,400 loops/s.
+Calibrating timer...  13,593,600 loops/s.
 hd0:0: detected 321 sector (160 kB) disk, model "QEMU HARDDISK", serial "QM00001"
 hd0:1: detected 20,160 sector (9 MB) disk, model "QEMU HARDDISK", serial "QM00002"
 hd1:0: detected 103 sector (51 kB) disk, model "QEMU HARDDISK", serial "QM00003"
@@ -25,8 +25,8 @@ r15 0000000000000000 rflags 00000212
 es: 001b ds: 001b cs: 0023 ss: 001b
 bad-jump: exit(0)
 Execution of 'bad-jump' complete.
-Timer: 166 ticks
-Thread: 68 idle ticks, 68 kernel ticks, 31 user ticks
+Timer: 176 ticks
+Thread: 57 idle ticks, 83 kernel ticks, 37 user ticks
 hd0:0: 0 reads, 0 writes
 hd0:1: 80 reads, 234 writes
 hd1:0: 103 reads, 0 writes

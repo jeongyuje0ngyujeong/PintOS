@@ -1,2 +1,17 @@
 FAIL
-run: read "deleteme": FAILED
+Kernel panic in run: PANIC at ../../userprog/exception.c:97 in kill(): Kernel bug - unexpected interrupt in kernel
+Call stack: 0x800421841c 0x800421cdb3 0x8004209239 0x8004209657 0x800421f1b6 0x800421f598 0x800421dccb 0x800421d441 0x800421d63d 0x800421cfa7 0x4001f6 0x40108f 0x4010d8
+Translation of call stack:
+0x000000800421841c: debug_panic (lib/kernel/debug.c:32)
+0x000000800421cdb3: kill (userprog/exception.c:103)
+0x0000008004209239: intr_handler (threads/interrupt.c:352)
+0x0000008004209657: intr_entry (threads/intr-stubs.o:?)
+0x000000800421f1b6: lookup (filesys/directory.c:90 (discriminator 1))
+0x000000800421f598: dir_remove (filesys/directory.c:179)
+0x000000800421dccb: filesys_remove (filesys/filesys.c:99 (discriminator 1))
+0x000000800421d441: remove (userprog/syscall.c:138)
+0x000000800421d63d: syscall_handler (userprog/syscall.c:200)
+0x000000800421cfa7: no_sti (userprog/syscall-entry.o:?)
+0x00000000004001f6: (unknown)
+0x000000000040108f: (unknown)
+0x00000000004010d8: (unknown)

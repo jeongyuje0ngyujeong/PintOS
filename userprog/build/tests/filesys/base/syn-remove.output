@@ -4,7 +4,7 @@ Kernel command line: -q -f put syn-remove run syn-remove
 Pintos booting with: 
 	base_mem: 0x0 ~ 0x9fc00 (Usable: 639 kB)
 	ext_mem: 0x100000 ~ 0x13e0000 (Usable: 19,328 kB)
-Calibrating timer...  16,153,600 loops/s.
+Calibrating timer...  13,696,000 loops/s.
 hd0:0: detected 321 sector (160 kB) disk, model "QEMU HARDDISK", serial "QM00001"
 hd0:1: detected 20,160 sector (9 MB) disk, model "QEMU HARDDISK", serial "QM00002"
 hd1:0: detected 109 sector (54 kB) disk, model "QEMU HARDDISK", serial "QM00003"
@@ -16,18 +16,23 @@ Executing 'syn-remove':
 (syn-remove) create "deleteme"
 (syn-remove) open "deleteme"
 (syn-remove) remove "deleteme"
-(syn-remove) write "deleteme"
-(syn-remove) seek "deleteme" to 0
-(syn-remove) read "deleteme"
-(syn-remove) read "deleteme": FAILED
-syn-remove: exit(1)
-Execution of 'syn-remove' complete.
-Timer: 172 ticks
-Thread: 77 idle ticks, 68 kernel ticks, 29 user ticks
+Interrupt 0x0d (#GP General Protection Exception) at rip=80042176e8
+ cr2=0000000000000000 error=               0
+rax 6300227325222064 rbx 0000000000000000 rcx 000000000000003f rdx 0000008004240dc8
+rsp 0000008004240d70 rbp 0000008004240d90 rsi 0000008004240dc8 rdi 6300227325222064
+rip 00000080042176e8 r8 0000000000000000  r9 0000000000000000 r10 0000000000000000
+r11 0000000000000216 r12 000000800421d547 r13 0000000000000000 r14 0000000000000000
+r15 0000000000000000 rflags 00000202
+es: 001b ds: 001b cs: 0008 ss: 0010
+Kernel PANIC at ../../userprog/exception.c:97 in kill(): Kernel bug - unexpected interrupt in kernel
+Call stack: 0x800421841c 0x800421cdb3 0x8004209239 0x8004209657 0x800421f1b6 0x800421f598 0x800421dccb 0x800421d441 0x800421d63d 0x800421cfa7 0x4001f6 0x40108f 0x4010d8.
+The `backtrace' program can make call stacks useful.
+Read "Backtraces" in the "Debugging Tools" chapter
+of the Pintos documentation for more information.
+Timer: 183 ticks
+Thread: 74 idle ticks, 68 kernel ticks, 41 user ticks
 hd0:0: 0 reads, 0 writes
-hd0:1: 109 reads, 264 writes
+hd0:1: 110 reads, 261 writes
 hd1:0: 109 reads, 0 writes
-Console: 1054 characters output
-Keyboard: 0 keys pressed
-Exception: 0 page faults
-Powering off...
+Console: 1814 characters output
+Key
