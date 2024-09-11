@@ -25,8 +25,8 @@ r15 0000000000000000 rflags 00000212
 es: 001b ds: 001b cs: 0023 ss: 001b
 bad-read: exit(0)
 Execution of 'bad-read' complete.
-Timer: 171 ticks
-Thread: 74 idle ticks, 68 kernel ticks, 31 user ticks
+Timer: 172 ticks
+Thread: 61 idle ticks, 76 kernel ticks, 36 user ticks
 hd0:0: 0 reads, 0 writes
 hd0:1: 80 reads, 234 writes
 hd1:0: 103 reads, 0 writes

@@ -229,6 +229,14 @@ void
 	if(curr->is_user) printf("%s: exit(%d)\n", curr->name, curr->file_status);
 	if (thread_current()->parent_thread->wait_sema != NULL)
 		sema_up(curr->parent_thread->wait_sema);
+
+	for (int i = 3; i < 30; i++) {
+		if (curr->fd_table[i] != NULL){
+			file_close(curr->fd_table[i]);
+			curr->fd_table[i] = NULL;
+		}
+	}
+	
 	process_cleanup ();
 }
 

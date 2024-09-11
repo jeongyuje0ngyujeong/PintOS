@@ -41,6 +41,36 @@ syscall_init (void) {
 	write_msr(MSR_SYSCALL_MASK,
 			FLAG_IF | FLAG_TF | FLAG_DF | FLAG_IOPL | FLAG_AC | FLAG_NT);
 }
+
+bool
+is_valid_fd (int fd) {
+	if (2 < fd && fd < 30 && thread_current()->fd_table[fd] != NULL) return true;
+	return false;	
+}
+
+// bool
+// check_valid_fd(int fd){
+//    for (int i = 0; i < 64; i++)
+//    {
+//       if (fd == i && thread_current()->fd_table[i] != NULL)
+//          return true;
+//    }
+//    return false;
+// }
+
+// bool 
+// check_valid_mem(void* ptr){
+//    if (ptr == NULL || !is_user_vaddr (ptr) || pml4_get_page(thread_current()->pml4, ptr) == NULL)
+//       return false;
+//    return true;
+// }
+
+// void
+// set_code_and_exit(int exit_code){
+//    thread_current()->file_status = exit_code;
+//    thread_exit();
+// }
+
 void
 exit(struct intr_frame *f) {
 	struct thread *curr = thread_current();
@@ -53,10 +83,10 @@ exit(struct intr_frame *f) {
 void
 create(struct intr_frame *f) {
 	char *cur_file = f->R.rdi;
+	printf("cur_file: %p\n",cur_file);
 	if (cur_file == NULL)
 	{
 		thread_current()->file_status = -1;
-		f->R.rax = 0;
 		thread_exit();
 		return;
 	}
@@ -141,6 +171,7 @@ void
 filesize(struct intr_frame *f) {
 	int fd = f->R.rdi;
 	if (fd < 3) {
+	
 		thread_current()->file_status = -1;
 		f->R.rax = -1;
 
@@ -148,6 +179,17 @@ filesize(struct intr_frame *f) {
 		f->R.rax = file_length(thread_current()->fd_table[fd]);
 		
 	}
+}
+
+void
+close(struct intr_frame *f) {
+	int fd = f->R.rdi;
+	if (!is_valid_fd(fd)) return;
+
+	file_close(thread_current()->fd_table[fd]);
+	thread_current()->fd_table[fd] = NULL;
+	
+	//else f->R.rax = -1;
 }
 
 
@@ -177,6 +219,26 @@ syscall_handler (struct intr_frame *f UNUSED) {
 		break;
 	case SYS_OPEN:              /* (7) Open a file. */
 		open(f);
+		// {
+		// char *file_name = f->R.rdi;
+		// if (!check_valid_mem(file_name))
+		// 	set_code_and_exit(-1);
+
+		// struct file* open_file = filesys_open(file_name);
+		
+		// if (open_file == NULL)
+		// 	f->R.rax = -1;
+		// else
+		// {
+		// 	int i = 0;
+		// 	while(thread_current()->fd_table[i])
+		// 		i ++;
+		// 	thread_current()->fd_table[i] = open_file;
+
+		// 	f->R.rax = i;
+		// }
+		// break;
+		// }
 		break;
 	case SYS_FILESIZE:			/* (8) Obtain a file's size. */
 		filesize(f);
@@ -192,6 +254,20 @@ syscall_handler (struct intr_frame *f UNUSED) {
 	case SYS_TELL:				/* (12) Report current position in a file. */
 		break;                   
 	case SYS_CLOSE:
+		close(f);
+		// {
+		// int fd = f->R.rdi;
+
+		// if (!check_valid_fd(fd)) break;
+		
+		// struct file* close_file 
+		// 		= thread_current()->fd_table[fd];
+		
+		// file_close(close_file);
+		// thread_current()->fd_table[fd] = NULL;
+	
+		// break;
+		// }
 		break;
 	
 	

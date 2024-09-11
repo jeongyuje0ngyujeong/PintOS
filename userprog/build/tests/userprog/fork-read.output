@@ -4,7 +4,7 @@ Kernel command line: -q -f put fork-read put sample.txt run fork-read
 Pintos booting with: 
 	base_mem: 0x0 ~ 0x9fc00 (Usable: 639 kB)
 	ext_mem: 0x100000 ~ 0x13e0000 (Usable: 19,328 kB)
-Calibrating timer...  15,539,200 loops/s.
+Calibrating timer...  13,900,800 loops/s.
 hd0:0: detected 313 sector (156 kB) disk, model "QEMU HARDDISK", serial "QM00001"
 hd0:1: detected 20,160 sector (9 MB) disk, model "QEMU HARDDISK", serial "QM00002"
 hd1:0: detected 111 sector (55 kB) disk, model "QEMU HARDDISK", serial "QM00003"
@@ -19,8 +19,8 @@ Executing 'fork-read':
 (fork-read) end
 fork-read: exit(0)
 Execution of 'fork-read' complete.
-Timer: 171 ticks
-Thread: 52 idle ticks, 94 kernel ticks, 26 user ticks
+Timer: 168 ticks
+Thread: 58 idle ticks, 89 kernel ticks, 23 user ticks
 hd0:0: 0 reads, 0 writes
 hd0:1: 117 reads, 260 writes
 hd1:0: 111 reads, 0 writes
