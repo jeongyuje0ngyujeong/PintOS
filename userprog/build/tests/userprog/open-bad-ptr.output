@@ -4,8 +4,8 @@ Kernel command line: -q -f put open-bad-ptr run open-bad-ptr
 Pintos booting with: 
 	base_mem: 0x0 ~ 0x9fc00 (Usable: 639 kB)
 	ext_mem: 0x100000 ~ 0x13e0000 (Usable: 19,328 kB)
-Calibrating timer...  13,094,400 loops/s.
-hd0:0: detected 313 sector (156 kB) disk, model "QEMU HARDDISK", serial "QM00001"
+Calibrating timer...  15,513,600 loops/s.
+hd0:0: detected 321 sector (160 kB) disk, model "QEMU HARDDISK", serial "QM00001"
 hd0:1: detected 20,160 sector (9 MB) disk, model "QEMU HARDDISK", serial "QM00002"
 hd1:0: detected 103 sector (51 kB) disk, model "QEMU HARDDISK", serial "QM00003"
 Formatting file system...done.
@@ -13,24 +13,14 @@ Boot complete.
 Putting 'open-bad-ptr' into the file system...
 Executing 'open-bad-ptr':
 (open-bad-ptr) begin
-Page fault at 0x20101234: not present error reading page in kernel context.
-Interrupt 0x0e (#PF Page-Fault Exception) at rip=80042176e8
- cr2=0000000020101234 error=               0
-rax 0000000020101234 rbx 0000000000000000 rcx 000000000000003e rdx 000000800423fe38
-rsp 000000800423fde0 rbp 000000800423fe00 rsi 000000800423fe38 rdi 0000000020101234
-rip 00000080042176e8 r8 0000000000000000  r9 0000000000000000 r10 0000000000000000
-r11 0000000000000212 r12 000000800421d4c3 r13 0000000000000000 r14 0000000000000000
-r15 0000000000000000 rflags 00000202
-es: 001b ds: 001b cs: 0008 ss: 0010
-Kernel PANIC at ../../userprog/exception.c:97 in kill(): Kernel bug - unexpected interrupt in kernel
-Call stack: 0x800421841c 0x800421cdb3 0x800421cf32 0x8004209239 0x8004209657 0x800421ef7c 0x800421f0b6 0x800421da2c 0x800421d362 0x800421d564 0x800421cfa7 0x4000fd 0x400190 0x400c31.
-The `backtrace' program can make call stacks useful.
-Read "Backtraces" in the "Debugging Tools" chapter
-of the Pintos documentation for more information.
-Timer: 157 ticks
-Thread: 71 idle ticks, 54 kernel ticks, 32 user ticks
+open-bad-ptr: exit(-1)
+Execution of 'open-bad-ptr' complete.
+Timer: 149 ticks
+Thread: 63 idle ticks, 77 kernel ticks, 11 user ticks
 hd0:0: 0 reads, 0 writes
-hd0:1: 82 reads, 234 writes
+hd0:1: 80 reads, 234 writes
 hd1:0: 103 reads, 0 writes
-Console: 1813 characters output
-Key
+Console: 847 characters output
+Keyboard: 0 keys pressed
+Exception: 0 page faults
+Powering off...

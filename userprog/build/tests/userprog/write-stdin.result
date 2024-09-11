@@ -1,15 +1,1 @@
-FAIL
-Kernel panic in run: PANIC at ../../userprog/exception.c:97 in kill(): Kernel bug - unexpected interrupt in kernel
-Call stack: 0x800421841c 0x800421cdb3 0x800421cf32 0x8004209239 0x8004209657 0x800421d207 0x800421d5a3 0x800421cfa7 0x400111 0x40016f 0x400c10
-Translation of call stack:
-0x000000800421841c: debug_panic (lib/kernel/debug.c:32)
-0x000000800421cdb3: kill (userprog/exception.c:103)
-0x000000800421cf32: page_fault (userprog/exception.c:159 (discriminator 12))
-0x0000008004209239: intr_handler (threads/interrupt.c:352)
-0x0000008004209657: intr_entry (threads/intr-stubs.o:?)
-0x000000800421d207: write (userprog/syscall.c:111)
-0x000000800421d5a3: syscall_handler (userprog/syscall.c:251)
-0x000000800421cfa7: no_sti (userprog/syscall-entry.o:?)
-0x0000000000400111: (unknown)
-0x000000000040016f: (unknown)
-0x0000000000400c10: (unknown)
+PASS
