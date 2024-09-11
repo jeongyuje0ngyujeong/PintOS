@@ -98,6 +98,9 @@ read(int fd, void *buffer, size_t size) {
 	}
 }
 
+pid_t
+
+
 int
 open(char *file_name) {
 	struct thread *t = thread_current();
@@ -178,7 +181,11 @@ syscall_handler (struct intr_frame *f UNUSED) {
 	} 
 
 	case SYS_FORK:              /* (2) Clone current process. */
+	{
+		char *thread_name = f->R.rdi;
+		f->R.rax = fork(thread_name, f);
 		break;
+	}
 
 	case SYS_EXEC:              /* (3) Switch current process. */
 		break;
@@ -252,7 +259,7 @@ syscall_handler (struct intr_frame *f UNUSED) {
 		close(fd);
 		break;
 	}
-	
+
 	default:
 		break;
 	}

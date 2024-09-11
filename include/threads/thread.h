@@ -114,6 +114,7 @@ struct thread {
 	struct semaphore *wait_sema;
 	struct thread *parent_thread;
 	struct thread *childern[30];
+	struct intr_frame user_if;
 	
 #endif
 #ifdef VM
