@@ -132,11 +132,14 @@ sema_up (struct semaphore *sema) {
 		sema->value++;
 		// msg ("sema_max_thread priority: %d\n", sema_max_thread->priority);
 		// msg ("sema front priority: %d", sema_front->priority)
+
+		// printf("여기서 오류나나?\n");
 		if (sema_max_thread->priority > thread_current()->priority && !intr_context ())
 		{
 			thread_yield();
+			// printf("일드되니??\n");
 		}
-		
+		// printf("value 몇이니?? value: %d\n", sema->value);
 	} else sema->value++;
 
 	intr_set_level (old_level);

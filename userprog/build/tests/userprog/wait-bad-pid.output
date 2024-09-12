@@ -13,15 +13,14 @@ Boot complete.
 Putting 'wait-bad-pid' into the file system...
 Executing 'wait-bad-pid':
 (wait-bad-pid) begin
-(wait-bad-pid) end
-wait-bad-pid: exit(0)
+wait-bad-pid: exit(-1)
 Execution of 'wait-bad-pid' complete.
-Timer: 147 ticks
-Thread: 52 idle ticks, 80 kernel ticks, 16 user ticks
+Timer: 140 ticks
+Thread: 72 idle ticks, 59 kernel ticks, 11 user ticks
 hd0:0: 0 reads, 0 writes
 hd0:1: 80 reads, 232 writes
 hd1:0: 102 reads, 0 writes
-Console: 865 characters output
+Console: 847 characters output
 Keyboard: 0 keys pressed
-Exception: 0 page faults
+Exception: 1 page faults
 Powering off...
