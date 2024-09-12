@@ -562,7 +562,12 @@ init_thread (struct thread *t, const char *name, int priority) {
 
 		t->file_status = 0;
 		t->is_user = false;
-		t->wait_sema = NULL;
+
+		sema_init(&t->wait_sema, 0);
+		sema_init(&t->fork_sema, 0);
+		sema_init(&t->free_sema, 0);
+
+		
 		if (name != "main") {
 			t->parent_thread = thread_current();
 			for (int i = 0; i < 30; i++) {
@@ -801,5 +806,17 @@ thread_wake(void) {
 			thread_yield();
 		}
 	}
+}
+
+struct thread *
+get_thread_to_tid (tid_t child_tid) {
+	struct thread *curr = thread_current();
+	for (int i = 0; i < 30; i++)
+	{
+		if (curr->childern[i]->tid == child_tid) 
+			return curr->childern[i];
+		
+	}
+	return NULL;
 }
 

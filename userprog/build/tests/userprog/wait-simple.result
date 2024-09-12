@@ -16,3 +16,5 @@ Differences in `diff -u' format:
 + (wait-simple) wait(exec()) = 4
   (wait-simple) end
   wait-simple: exit(0)
++ (wait-simple) end
++ child-simple: exit(0)

@@ -111,7 +111,9 @@ struct thread {
 	int file_status;
 	int wait_status;
 	bool is_user;
-	struct semaphore *wait_sema;
+	struct semaphore wait_sema;
+	struct semaphore fork_sema;
+	struct semaphore free_sema;
 	struct thread *parent_thread;
 	struct thread *childern[30];
 	struct intr_frame user_if;
@@ -177,5 +179,6 @@ void thread_update_priority (struct thread *t);
 void thread_all_update_priority (void);
 void thread_all_update_recent_cpu (void);
 void thread_wake(void);
+struct thread *get_thread_to_tid (tid_t child_tid);
 
 #endif /* threads/thread.h */

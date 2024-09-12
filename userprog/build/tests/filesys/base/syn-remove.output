@@ -4,7 +4,7 @@ Kernel command line: -q -f put syn-remove run syn-remove
 Pintos booting with: 
 	base_mem: 0x0 ~ 0x9fc00 (Usable: 639 kB)
 	ext_mem: 0x100000 ~ 0x13e0000 (Usable: 19,328 kB)
-Calibrating timer...  15,539,200 loops/s.
+Calibrating timer...  13,094,400 loops/s.
 hd0:0: detected 321 sector (160 kB) disk, model "QEMU HARDDISK", serial "QM00001"
 hd0:1: detected 20,160 sector (9 MB) disk, model "QEMU HARDDISK", serial "QM00002"
 hd1:0: detected 109 sector (54 kB) disk, model "QEMU HARDDISK", serial "QM00003"
@@ -21,16 +21,16 @@ Interrupt 0x0d (#GP General Protection Exception) at rip=80042176e8
 rax 6300227325222064 rbx 0000000000000000 rcx 000000000000003f rdx 0000008004240dc8
 rsp 0000008004240d70 rbp 0000008004240d90 rsi 0000008004240dc8 rdi 6300227325222064
 rip 00000080042176e8 r8 0000000000000000  r9 0000000000000000 r10 0000000000000000
-r11 0000000000000216 r12 000000800421d575 r13 0000000000000000 r14 0000000000000000
+r11 0000000000000216 r12 000000800421d709 r13 0000000000000000 r14 0000000000000000
 r15 0000000000000000 rflags 00000202
 es: 001b ds: 001b cs: 0008 ss: 0010
 Kernel PANIC at ../../userprog/exception.c:97 in kill(): Kernel bug - unexpected interrupt in kernel
-Call stack: 0x800421841c 0x800421cdb3 0x8004209239 0x8004209657 0x800421f1e4 0x800421f5c6 0x800421dcf9 0x800421d46f 0x800421d66b 0x800421cfd5 0x4001f6 0x40108f 0x4010d8.
+Call stack: 0x800421841c 0x800421cee8 0x8004209239 0x8004209657 0x800421f3b7 0x800421f799 0x800421decc 0x800421d603 0x800421d83e 0x800421d10a 0x4001f6 0x40108f 0x4010d8.
 The `backtrace' program can make call stacks useful.
 Read "Backtraces" in the "Debugging Tools" chapter
 of the Pintos documentation for more information.
-Timer: 190 ticks
-Thread: 60 idle ticks, 82 kernel ticks, 48 user ticks
+Timer: 182 ticks
+Thread: 66 idle ticks, 73 kernel ticks, 43 user ticks
 hd0:0: 0 reads, 0 writes
 hd0:1: 110 reads, 261 writes
 hd1:0: 109 reads, 0 writes

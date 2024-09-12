@@ -4,7 +4,7 @@ Kernel command line: -q -f put syn-read put child-syn-read run syn-read
 Pintos booting with: 
 	base_mem: 0x0 ~ 0x9fc00 (Usable: 639 kB)
 	ext_mem: 0x100000 ~ 0x13e0000 (Usable: 19,328 kB)
-Calibrating timer...  15,539,200 loops/s.
+Calibrating timer...  13,094,400 loops/s.
 hd0:0: detected 321 sector (160 kB) disk, model "QEMU HARDDISK", serial "QM00001"
 hd0:1: detected 20,160 sector (9 MB) disk, model "QEMU HARDDISK", serial "QM00002"
 hd1:0: detected 225 sector (112 kB) disk, model "QEMU HARDDISK", serial "QM00003"
@@ -31,13 +31,30 @@ Executing 'syn-read':
 (syn-read) wait for child 1 of 10 returned 4 (expected 0)
 (syn-read) wait for child 1 of 10 returned 4 (expected 0): FAILED
 syn-read: exit(1)
-Execution of 'syn-read' complete.
-Timer: 235 ticks
-Thread: 123 idle ticks, 66 kernel ticks, 47 user ticks
+(syn-read) exec child 9 of 10: "child-syn-read 8"
+(syn-read) exec child 6 of 10: "child-syn-read 5"
+(syn-read) exec child 8 of 10: "child-syn-read 7"
+child-syn-read: exit(-1)
+child-syn-read: exit(-1)
+(syn-read) exec child 8 of 10: "child-syn-read 7"
+child-syn-read: exit(-1)
+Interrupt 0x0d (#GP General Protection Exception) at rip=8004218619
+ cr2=0000000000000018 error=               0
+rax ccccccccccccccd4 rbx 000000004747ff84 rcx 000000800427c040 rdx 0000000000000001
+rsp 0000008004272b80 rbp 0000008004272b90 rsi 000000800427c040 rdi ccccccccccccccd4
+rip 0000008004218619 r8 0000008004272b38  r9 000000800421b895 r10 0000000000000000
+r11 0000000000000212 r12 000000800421d709 r13 0000000000000000 r14 0000000000000000
+r15 0000000000000000 rflags 00000086
+es: 0010 ds: 0010 cs: 0008 ss: 0010
+Kernel PANIC at ../../userprog/exception.c:97 in kill(): Kernel bug - unexpected interrupt in kernel
+Call stack: 0x800421841c 0x800421cee8 0x8004209239 0x8004209657 0x8004218e7f 0x800420a415 0x800421bfce 0x800420719f 0x800421d005 0x8004209239 0x8004209657 0x800420b9d9 0x800420badd 0x8004206d0a 0x800421bb2e 0x800421d491 0x800421d7be 0x800421d10a 0x4006a9 0x4002a6 0x400fa7 0x400ff0.
+The `backtrace' program can make call stacks useful.
+Read "Backtraces" in the "Debugging Tools" chapter
+of the Pintos documentation for more information.
+Timer: 414 ticks
+Thread: 111 idle ticks, 88 kernel ticks, 215 user ticks
 hd0:0: 0 reads, 0 writes
 hd0:1: 137 reads, 504 writes
 hd1:0: 225 reads, 0 writes
-Console: 1610 characters output
-Keyboard: 0 keys pressed
-Exception: 0 page faults
-Powering off...
+Console: 2911 characters output
+Key

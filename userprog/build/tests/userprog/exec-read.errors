@@ -1,1 +1,10 @@
 qemu-system-x86_64: warning: TCG doesn't support requested feature: CPUID.01H:ECX.vmx [bit 5]
+Exception ignored in: <module 'threading' from '/usr/lib/python3.6/threading.py'>
+Traceback (most recent call last):
+  File "/usr/lib/python3.6/threading.py", line 1292, in _shutdown
+    t = _pickSomeNonDaemonThread()
+  File "/usr/lib/python3.6/threading.py", line 1298, in _pickSomeNonDaemonThread
+    for t in enumerate():
+  File "/usr/lib/python3.6/threading.py", line 1268, in enumerate
+    with _active_limbo_lock:
+KeyboardInterrupt: 

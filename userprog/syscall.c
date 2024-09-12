@@ -1,6 +1,7 @@
 #include "userprog/syscall.h"
 #include <stdio.h>
 #include <syscall-nr.h>
+#include <string.h>
 #include "threads/interrupt.h"
 #include "threads/thread.h"
 #include "threads/loader.h"
@@ -52,7 +53,8 @@ void
 exit(int status) {
 	struct thread *curr = thread_current();
 	curr->file_status = status;
-	
+	// sema_up(curr->parent_thread->wait_sema);
+
 	thread_exit();
 }
 
@@ -98,8 +100,22 @@ read(int fd, void *buffer, size_t size) {
 	}
 }
 
-pid_t
+tid_t
+fork (char *thread_name, struct intr_frame *user_frame){
+	memcpy(&thread_current()->user_if, user_frame, sizeof(struct intr_frame));
+	/* fork를 통해 복제된 thread와 thread 생성시 만들어진 child는 다른데..ㅠㅠㅠ */
+	tid_t child_tid = process_fork (thread_name, user_frame);
+	if (child_tid == -1) return child_tid;
 
+	for (int i = 0; i < 30; i++)
+	{
+		if (!thread_current()->childern[i]) {
+			thread_current()->childern[i] = get_thread_to_tid(child_tid);
+			return child_tid;
+		}
+	}
+	return -1;
+}
 
 int
 open(char *file_name) {
@@ -132,6 +148,11 @@ filesize(int fd) {
 	} 
 	else return file_length(thread_current()->fd_table[fd]);	
 	
+}
+
+int
+wait(tid_t tid) {
+	return process_wait(tid);
 }
 
 bool
@@ -191,8 +212,11 @@ syscall_handler (struct intr_frame *f UNUSED) {
 		break;
 
 	case SYS_WAIT:              /* (4) Wait for a child process to die. */
+	{
+		tid_t tid = f->R.rdi;
+		f->R.rax = wait(tid);
 		break;
-
+	}
 	case SYS_CREATE:			/* (5) Create a file. */
 	{
 		char *cur_file = f->R.rdi;

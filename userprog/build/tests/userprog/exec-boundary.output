@@ -4,7 +4,7 @@ Kernel command line: -q -f put exec-boundary put child-simple run exec-boundary
 Pintos booting with: 
 	base_mem: 0x0 ~ 0x9fc00 (Usable: 639 kB)
 	ext_mem: 0x100000 ~ 0x13e0000 (Usable: 19,328 kB)
-Calibrating timer...  15,129,600 loops/s.
+Calibrating timer...  15,232,000 loops/s.
 hd0:0: detected 321 sector (160 kB) disk, model "QEMU HARDDISK", serial "QM00001"
 hd0:1: detected 20,160 sector (9 MB) disk, model "QEMU HARDDISK", serial "QM00002"
 hd1:0: detected 207 sector (103 kB) disk, model "QEMU HARDDISK", serial "QM00003"
@@ -18,13 +18,11 @@ Executing 'exec-boundary':
 (exec-boundary) wait
 (exec-boundary) wait: FAILED
 exec-boundary: exit(1)
-Execution of 'exec-boundary' complete.
-Timer: 208 ticks
-Thread: 78 idle ticks, 112 kernel ticks, 20 user ticks
-hd0:0: 0 reads, 0 writes
-hd0:1: 107 reads, 452 writes
-hd1:0: 207 reads, 0 writes
-Console: 991 characters output
-Keyboard: 0 keys pressed
-Exception: 0 page faults
-Powering off...
+(exec-boundary) wait
+(exec-boundary) wait: FAILED
+child-simple: exit(1)
+Kernel PANIC at ../../threads/thread.c:293 in thread_current(): assertion `is_thread (t)' failed.
+Call stack: 0x800421841c 0x80042070d9 0x800421cfef 0x8004209239 0x8004209657 0x800420719f 0x800421d005 0x8004209239 0x8004209657 0x800420719f 0x800421d005 0x8004209239 0x8004209657 0x800420719f 0x800421d005 0x8004209239 0x8004209657 0x800420719f 0x800421d005 0x8004209239 0x8004209657 0x800420719f 0x800421d005 0x8004209239 0x8004209657 0x800420719f 0x800421d005 0x8004209239 0x8004209657 0x800420719f 0x800421d005 0x8004209239 0x8004209657 0x800421b672 0x800421b759 0x800421591f 0x8004206795 0x80042068c0 0x800420617a.
+The `backtrace' program can make call stacks useful.
+Read "Backtraces" in the "Debugging Tools" chapter
+of the Pintos documentation for more information.

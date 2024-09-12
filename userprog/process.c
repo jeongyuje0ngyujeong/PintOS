@@ -78,10 +78,16 @@ initd (void *f_name) {
  * TID_ERROR if the thread cannot be created. */
 tid_t
 process_fork (const char *name, struct intr_frame *if_ UNUSED) {
-	/* Clone current thread to new thread.*/
-	return thread_create (name,
-			PRI_DEFAULT, __do_fork, thread_current ());
+	tid_t tid = thread_create (name,PRI_DEFAULT, __do_fork, thread_current ());
+	if (tid == TID_ERROR) return -1;
+	
+	struct thread *curr = thread_current();
+	
+	sema_down(&curr->fork_sema);
+
+	return tid;
 }
+	
 
 #ifndef VM
 /* Duplicate the parent's address space by passing this function to the
@@ -109,7 +115,7 @@ duplicate_pte (uint64_t *pte, void *va, void *aux) {
 	 *    TODO: according to the result). */
 
 	writable = is_writable(pte);
-	newpage = parent_page;
+	memcpy(newpage, parent_page, PGSIZE);
 
 	/* 5. Add new page to child's page table at address VA with WRITABLE
 	 *    permission. */
@@ -130,19 +136,22 @@ __do_fork (void *aux) {
 	struct intr_frame if_;
 	struct thread *parent = (struct thread *) aux;
 	struct thread *current = thread_current ();
-	/* TODO: somehow pass the parent_if. (i.e. process_fork()'s if_) */
-	if_ = thread_current()->user_if;
 	struct intr_frame *parent_if;
+
+	
+	parent_if = &parent->user_if;
 	bool succ = true;
 
 	/* 1. Read the cpu context to local stack. */
 	memcpy (&if_, parent_if, sizeof (struct intr_frame));
+	/* 자식이 성공적으로 만들어지고 있다,, */
+	if_.R.rax = 0;
 
 	/* 2. Duplicate PT */
 	current->pml4 = pml4_create();
 	if (current->pml4 == NULL)
 		goto error;
-
+	// printf("여기까지니??ㅇ?여가지강ㄱ라리리리리 \n");
 	process_activate (current);
 #ifdef VM
 	supplemental_page_table_init (&current->spt);
@@ -159,12 +168,23 @@ __do_fork (void *aux) {
 	 * TODO:       from the fork() until this function successfully duplicates
 	 * TODO:       the resources of parent.*/
 
+	for (int i = 3; i < 30; i++)
+	{
+		if (parent->fd_table[i] != NULL)
+			current->fd_table[i] = file_duplicate(parent->fd_table[i]);
+	}
+
 	process_init ();
+	sema_up(&parent->fork_sema);
+
 
 	/* Finally, switch to the newly created process. */
-	if (succ)
+	if (succ) 
 		do_iret (&if_);
+
+
 error:
+	sema_up(&parent->fork_sema);
 	thread_exit ();
 }
 
@@ -217,11 +237,12 @@ process_wait (tid_t child_tid UNUSED) {
 
 	for (int i = 0; i < 30; i++) {
 		if (curr->childern[i]->tid == child_tid) {
-			struct semaphore curr_sema;
-			sema_init(&curr_sema, 0);
-			curr->wait_sema = &curr_sema;
-			sema_down(&curr_sema);
-			break;
+			sema_down(&curr->childern[i]->wait_sema);
+			
+			curr->childern[i] = NULL;
+			sema_up(&curr->childern[i]->free_sema);
+
+			return curr->childern[i]->file_status;
 		}
 	}
 	
@@ -234,8 +255,9 @@ void
  process_exit (void) {
 	struct thread *curr = thread_current ();
 	if(curr->is_user) printf("%s: exit(%d)\n", curr->name, curr->file_status);
-	if (thread_current()->parent_thread->wait_sema != NULL)
-		sema_up(curr->parent_thread->wait_sema);
+	if(thread_current()->parent_thread != NULL){
+		sema_up(&curr->wait_sema);
+	}
 
 	for (int i = 3; i < 30; i++) {
 		if (curr->fd_table[i] != NULL){
@@ -243,6 +265,8 @@ void
 			curr->fd_table[i] = NULL;
 		}
 	}
+
+	sema_down(&curr->free_sema);
 	
 	process_cleanup ();
 }

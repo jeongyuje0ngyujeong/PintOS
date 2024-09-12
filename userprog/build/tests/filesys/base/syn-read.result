@@ -1,2 +1,26 @@
 FAIL
-run: wait for child 1 of 10 returned 4 (expected 0): FAILED
+Kernel panic in run: PANIC at ../../userprog/exception.c:97 in kill(): Kernel bug - unexpected interrupt in kernel
+Call stack: 0x800421841c 0x800421cee8 0x8004209239 0x8004209657 0x8004218e7f 0x800420a415 0x800421bfce 0x800420719f 0x800421d005 0x8004209239 0x8004209657 0x800420b9d9 0x800420badd 0x8004206d0a 0x800421bb2e 0x800421d491 0x800421d7be 0x800421d10a 0x4006a9 0x4002a6 0x400fa7 0x400ff0
+Translation of call stack:
+0x000000800421841c: debug_panic (lib/kernel/debug.c:32)
+0x000000800421cee8: kill (userprog/exception.c:103)
+0x0000008004209239: intr_handler (threads/interrupt.c:352)
+0x0000008004209657: intr_entry (threads/intr-stubs.o:?)
+0x0000008004218e7f: list_empty (lib/kernel/list.c:297)
+0x000000800420a415: sema_up (threads/synch.c:124)
+0x000000800421bfce: process_exit (userprog/process.c:247)
+0x000000800420719f: thread_exit (threads/thread.c:317)
+0x000000800421d005: page_fault (userprog/exception.c:161)
+0x0000008004209239: intr_handler (threads/interrupt.c:352)
+0x0000008004209657: intr_entry (threads/intr-stubs.o:?)
+0x000000800420b9d9: palloc_get_multiple (threads/palloc.c:267 (discriminator 4))
+0x000000800420badd: palloc_get_page (threads/palloc.c:297)
+0x0000008004206d0a: thread_create (threads/thread.c:196)
+0x000000800421bb2e: process_fork (userprog/process.c:84)
+0x000000800421d491: fork (userprog/syscall.c:106)
+0x000000800421d7be: syscall_handler (userprog/syscall.c:190)
+0x000000800421d10a: no_sti (userprog/syscall-entry.o:?)
+0x00000000004006a9: (unknown)
+0x00000000004002a6: (unknown)
+0x0000000000400fa7: (unknown)
+0x0000000000400ff0: (unknown)

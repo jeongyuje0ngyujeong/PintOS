@@ -1,21 +1,43 @@
 FAIL
-Test output failed to match any acceptable form.
-
-Acceptable output:
-  (wait-twice) begin
-  (child-simple) run
-  child-simple: exit(81)
-  (wait-twice) wait(exec()) = 81
-  (wait-twice) wait(exec()) = -1
-  (wait-twice) end
-  wait-twice: exit(0)
-Differences in `diff -u' format:
-  (wait-twice) begin
-- (child-simple) run
-- child-simple: exit(81)
-- (wait-twice) wait(exec()) = 81
-- (wait-twice) wait(exec()) = -1
-+ (wait-twice) wait(exec()) = 4
-+ (wait-twice) wait(exec()) = 4
-  (wait-twice) end
-  wait-twice: exit(0)
+Kernel panic in run: PANIC at ../../threads/thread.c:293 in thread_current(): assertion `is_thread (t)' failed.
+Call stack: 0x800421841c 0x80042070d9 0x800421cfef 0x8004209239 0x8004209657 0x800420719f 0x800421d005 0x8004209239 0x8004209657 0x800420719f 0x800421d005 0x8004209239 0x8004209657 0x800420719f 0x800421d005 0x8004209239 0x8004209657 0x800420719f 0x800421d005 0x8004209239 0x8004209657 0x800420719f 0x800421d005 0x8004209239 0x8004209657 0x800420719f 0x800421d005 0x8004209239 0x8004209657 0x800420719f 0x800421d005 0x8004209239 0x8004209657 0x800421b672 0x800421b759 0x800421591f 0x8004206795 0x80042068c0 0x800420617a
+Translation of call stack:
+0x000000800421841c: debug_panic (lib/kernel/debug.c:32)
+0x00000080042070d9: thread_current (threads/thread.c:294)
+0x000000800421cfef: page_fault (userprog/exception.c:154)
+0x0000008004209239: intr_handler (threads/interrupt.c:352)
+0x0000008004209657: intr_entry (threads/intr-stubs.o:?)
+0x000000800420719f: thread_exit (threads/thread.c:317)
+0x000000800421d005: page_fault (userprog/exception.c:161)
+0x0000008004209239: intr_handler (threads/interrupt.c:352)
+0x0000008004209657: intr_entry (threads/intr-stubs.o:?)
+0x000000800420719f: thread_exit (threads/thread.c:317)
+0x000000800421d005: page_fault (userprog/exception.c:161)
+0x0000008004209239: intr_handler (threads/interrupt.c:352)
+0x0000008004209657: intr_entry (threads/intr-stubs.o:?)
+0x000000800420719f: thread_exit (threads/thread.c:317)
+0x000000800421d005: page_fault (userprog/exception.c:161)
+0x0000008004209239: intr_handler (threads/interrupt.c:352)
+0x0000008004209657: intr_entry (threads/intr-stubs.o:?)
+0x000000800420719f: thread_exit (threads/thread.c:317)
+0x000000800421d005: page_fault (userprog/exception.c:161)
+0x0000008004209239: intr_handler (threads/interrupt.c:352)
+0x0000008004209657: intr_entry (threads/intr-stubs.o:?)
+0x000000800420719f: thread_exit (threads/thread.c:317)
+0x000000800421d005: page_fault (userprog/exception.c:161)
+0x0000008004209239: intr_handler (threads/interrupt.c:352)
+0x0000008004209657: intr_entry (threads/intr-stubs.o:?)
+0x000000800420719f: thread_exit (threads/thread.c:317)
+0x000000800421d005: page_fault (userprog/exception.c:161)
+0x0000008004209239: intr_handler (threads/interrupt.c:352)
+0x0000008004209657: intr_entry (threads/intr-stubs.o:?)
+0x000000800420719f: thread_exit (threads/thread.c:317)
+0x000000800421d005: page_fault (userprog/exception.c:161)
+0x0000008004209239: intr_handler (threads/interrupt.c:352)
+0x0000008004209657: intr_entry (threads/intr-stubs.o:?)
+0x000000800421b672: acquire_console (lib/kernel/console.c:92)
+0x000000800421b759: vprintf (lib/kernel/console.c:122)
+0x000000800421591f: printf (lib/stdio.c:80)
+0x0000008004206795: run_task (threads/init.c:253)
+0x00000080042068c0: run_actions (threads/init.c:297)
+0x000000800420617a: main (threads/init.c:125)
