@@ -209,7 +209,7 @@ process_exec (void *f_name) {
 
 	/* And then load the binary */
 	success = load (file_name, &_if);
-	printf("success: %d\n", success);
+	// printf("success: %d\n", success);
 
 	/* If load failed, quit. */
 	palloc_free_page (file_name);
@@ -235,25 +235,31 @@ process_exec (void *f_name) {
  * does nothing. */
 int
 process_wait (tid_t child_tid UNUSED) {
-	// struct thread *curr = thread_current();
 	struct thread *child = get_thread_to_tid(child_tid);
 
-	for (int i = 0; i < 30; i++) {
-		sema_down(&child->wait_sema);
+	if (child == NULL) exit(-1);
+	
+	sema_down(&child->wait_sema);
 
-		struct thread *parent = child->parent_thread;
-		for (int i = 0; i < 30; i++) {
-			if (parent->childern[i] == child) 
-				parent->childern[i] = NULL;
+	bool is_child = false;
+	struct thread *parent = child->parent_thread;
+
+	for (int i = 0; i < CHILD_MAX; i++) {
+		if (parent->childern[i] == child) {
+			is_child = true;
+			parent->childern[i] = NULL;
 		}
-		
-		sema_up(&child->free_sema);
-			
-		return child->exit_status;
-		//curr->childern[i] = NULL;
-		
 	}
-	return -1;
+	
+	if (!is_child) {
+		child->exit_status = -1;
+		return -1;
+	}
+
+	sema_up(&child->free_sema);
+		
+	return child->exit_status;
+
 	
 }
 
@@ -261,22 +267,24 @@ process_wait (tid_t child_tid UNUSED) {
 void
  process_exit (void) {
 	struct thread *curr = thread_current ();
-	if (curr->is_user) 
+	if (curr->is_user) {
 		printf("%s: exit(%d)\n", curr->name, curr->exit_status);
 
-	if (thread_current()->parent_thread != NULL)
-		sema_up(&curr->wait_sema);
-	
-	for (int i = 3; i < 30; i++) {
-		if (curr->fd_table[i] != NULL) {
-			file_close(curr->fd_table[i]);
-			curr->fd_table[i] = NULL;
+		if (thread_current()->parent_thread != NULL) {
+			sema_up(&curr->wait_sema);
 		}
+		
+		for (int i = 3; i < 30; i++) {
+			if (curr->fd_table[i] != NULL) {
+				file_close(curr->fd_table[i]);
+				curr->fd_table[i] = NULL;
+			}
+		}
+
+		// printf("죽기직전 마지막 세마하기,,,직전,,,\n");
+		sema_down(&curr->free_sema);
 	}
-	// printf("죽기직전 마지막 세마하기,,,직전,,,\n");
-	sema_down(&curr->free_sema);
-	
-	process_cleanup ();
+		process_cleanup ();
 }
 
 /* Free the current process's resources. */

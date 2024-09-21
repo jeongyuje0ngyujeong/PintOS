@@ -172,7 +172,7 @@ exec(char *cmd_line, struct intr_frame *f){
 	strlcpy(fn_copy, cmd_line, PGSIZE);
 
 	// printf("process exec 실행한다1!!\n");
-	if (process_exec(cmd_line) < 0) {
+	if (process_exec(fn_copy) < 0) {
 		f->R.rax = -1;
 
 		thread_current()->exit_status = -1;

@@ -14,6 +14,7 @@ test_main (void)
     msg ("wait(exec()) = %d", wait (child));
     msg ("wait(exec()) = %d", wait (child));
   } else {
+    // msg ("exec pid: %d\n", child);
     exec ("child-simple");
   }
 }
