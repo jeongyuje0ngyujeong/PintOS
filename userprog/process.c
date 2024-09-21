@@ -68,7 +68,7 @@ initd (void *f_name) {
 #endif
 
 	process_init ();
-
+	// print("init 잘됐니?\n");
 	if (process_exec (f_name) < 0)
 		PANIC("Fail to launch initd\n");
 	NOT_REACHED ();
@@ -85,6 +85,7 @@ process_fork (const char *name, struct intr_frame *if_ UNUSED) {
 	
 	sema_down(&curr->fork_sema);
 
+	// printf("tid: %d\n", tid);
 	return tid;
 }
 	
@@ -208,6 +209,7 @@ process_exec (void *f_name) {
 
 	/* And then load the binary */
 	success = load (file_name, &_if);
+	// printf("success: %d\n", success);
 
 	/* If load failed, quit. */
 	palloc_free_page (file_name);
@@ -233,23 +235,24 @@ process_exec (void *f_name) {
  * does nothing. */
 int
 process_wait (tid_t child_tid UNUSED) {
-	struct thread *curr = thread_current();
+	// struct thread *curr = thread_current();
+	struct thread *child = get_thread_to_tid(child_tid);
 
 	for (int i = 0; i < 30; i++) {
-		if (curr->childern[i]->tid == child_tid) {
+		sema_down(&child->wait_sema);
 
-			sema_down(&curr->childern[i]->wait_sema);
-
-			sema_up(&curr->childern[i]->free_sema);
-			// printf("부모... 왔니...?\n");
-			
-			int child_status = curr->childern[i]->file_status;
-			curr->childern[i] = NULL;
-			
-			return child_status;
+		struct thread *parent = child->parent_thread;
+		for (int i = 0; i < 30; i++) {
+			if (parent->childern[i] == child) 
+				parent->childern[i] = NULL;
 		}
+		
+		sema_up(&child->free_sema);
+			
+		return child->exit_status;
+		//curr->childern[i] = NULL;
+		
 	}
-	
 	return -1;
 	
 }
@@ -258,14 +261,14 @@ process_wait (tid_t child_tid UNUSED) {
 void
  process_exit (void) {
 	struct thread *curr = thread_current ();
-	if(curr->is_user) printf("%s: exit(%d)\n", curr->name, curr->file_status);
-	if(thread_current()->parent_thread != NULL){
-		// printf("자식이 부모 sema up 하니?\n");
-		sema_up(&curr->wait_sema);
-	}
+	if (curr->is_user) 
+		printf("%s: exit(%d)\n", curr->name, curr->exit_status);
 
+	if (thread_current()->parent_thread != NULL)
+		sema_up(&curr->wait_sema);
+	
 	for (int i = 3; i < 30; i++) {
-		if (curr->fd_table[i] != NULL){
+		if (curr->fd_table[i] != NULL) {
 			file_close(curr->fd_table[i]);
 			curr->fd_table[i] = NULL;
 		}
@@ -398,15 +401,12 @@ load (const char *file_name, struct intr_frame *if_) {
 	int argc = 0;
 
 	/* file name 복사한 부분을 passing 하여 진행 - 추후 사용 가능성이 있을 수도 있기에 확장성을 위하여 */
-	strlcpy(argument, file_name, LOADER_ARGS_LEN);  
-
+	 strlcpy(argument, file_name, LOADER_ARGS_LEN);  
 	
-	i = 0;
 	for (token = strtok_r (argument, " ", &save_ptr); token != NULL; token = strtok_r (NULL, " ", &save_ptr))
 	{
-		argv[i] = token;
+		argv[argc] = token;
 		argc ++;
-		i ++;
 	}
 	argv[argc] = NULL;    
 

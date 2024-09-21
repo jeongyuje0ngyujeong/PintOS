@@ -10,6 +10,7 @@
 #include "intrinsic.h"
 #include "filesys/file.h"
 #include "filesys/filesys.h"
+#include "threads/palloc.h"
 
 
 void syscall_entry (void);
@@ -52,7 +53,7 @@ is_valid_fd (int fd) {
 void
 exit(int status) {
 	struct thread *curr = thread_current();
-	curr->file_status = status;
+	curr->exit_status = status;
 	// sema_up(curr->parent_thread->wait_sema);
 
 	thread_exit();
@@ -62,7 +63,7 @@ bool
 create(char *cur_file, size_t size) {
 	if (cur_file == NULL || !is_user_vaddr(cur_file) || !pml4_get_page(thread_current()->pml4, cur_file))
 	{
-		thread_current()->file_status = -1;
+		thread_current()->exit_status = -1;
 		thread_exit();
 		return;
 	}
@@ -94,7 +95,7 @@ read(int fd, void *buffer, size_t size) {
 	}
 	else 
 	{
-		thread_current()->file_status = -1;
+		thread_current()->exit_status = -1;
 		thread_exit();
 		return;
 	}
@@ -104,6 +105,7 @@ tid_t
 fork (char *thread_name, struct intr_frame *user_frame){
 	memcpy(&thread_current()->user_if, user_frame, sizeof(struct intr_frame));
 	/* fork를 통해 복제된 thread와 thread 생성시 만들어진 child는 다른데..ㅠㅠㅠ */
+	// printf("init fork\n");
 	tid_t child_tid = process_fork (thread_name, user_frame);
 	if (child_tid == -1) return child_tid;
 
@@ -111,6 +113,7 @@ fork (char *thread_name, struct intr_frame *user_frame){
 	{
 		if (!thread_current()->childern[i]) {
 			thread_current()->childern[i] = get_thread_to_tid(child_tid);
+			// printf("tid: %d\n", child_tid);
 			return child_tid;
 		}
 	}
@@ -123,7 +126,7 @@ open(char *file_name) {
 
 	if (file_name == NULL || !is_user_vaddr(file_name) || !pml4_get_page(thread_current()->pml4, file_name))
 	{	
-		thread_current()->file_status = -1;
+		thread_current()->exit_status = -1;
 		thread_exit();
 		
 	}
@@ -143,11 +146,31 @@ open(char *file_name) {
 int
 filesize(int fd) {
 	if (fd < 3) {
-		thread_current()->file_status = -1;
+		thread_current()->exit_status = -1;
 		return -1;
 	} 
 	else return file_length(thread_current()->fd_table[fd]);	
 	
+}
+
+void
+exec(char *cmd_line, struct intr_frame *f){
+	/* address가 유효한 address인지 확인하는 코드 */
+	if (cmd_line == NULL || !is_user_vaddr(cmd_line) || !pml4_get_page(thread_current()->pml4, cmd_line))
+	{	
+		thread_current()->exit_status = -1;
+		thread_exit();
+		
+	}
+
+	/* pid */
+	char *fn_copy = palloc_get_page(PAL_ZERO);
+	if (fn_copy == NULL)
+		return TID_ERROR;
+	
+	strlcpy(fn_copy, cmd_line, PGSIZE);
+	if (process_exec(cmd_line) < 0) 
+		f->R.rax = -1;
 }
 
 int
@@ -209,8 +232,11 @@ syscall_handler (struct intr_frame *f UNUSED) {
 	}
 
 	case SYS_EXEC:              /* (3) Switch current process. */
+	{
+		char *file = f->R.rdi;
+		exec(file, f);
 		break;
-
+	}
 	case SYS_WAIT:              /* (4) Wait for a child process to die. */
 	{
 		tid_t tid = f->R.rdi;

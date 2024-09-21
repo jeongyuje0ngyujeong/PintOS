@@ -151,7 +151,7 @@ page_fault (struct intr_frame *f) {
 
 	if (not_present || user)
 	{
-		thread_current()->file_status = -1;
+		thread_current()->exit_status = -1;
 		thread_exit();
 		return;
 	}

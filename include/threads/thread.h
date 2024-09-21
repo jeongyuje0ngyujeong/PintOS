@@ -30,6 +30,10 @@ typedef int tid_t;
 #define PRI_DEFAULT 31                  /* Default priority. */
 #define PRI_MAX 63                      /* Highest priority. */
 
+#define CHILD_MAX 30
+#define FD_MAX 30
+
+
 /* A kernel thread or user process.
  *
  * Each thread structure is stored in its own 4 kB page.  The
@@ -107,15 +111,18 @@ struct thread {
 #ifdef USERPROG
 	/* Owned by userprog/process.c. */
 	uint64_t *pml4;                     /* Page map level 4 */
-	struct file *fd_table[30];					/* file descriptor table */
-	int file_status;
+	struct file *fd_table[FD_MAX];			/* file descriptor table */
+	int exit_status;
 	int wait_status;
 	bool is_user;
+
 	struct semaphore wait_sema;
 	struct semaphore fork_sema;
 	struct semaphore free_sema;
+
 	struct thread *parent_thread;
-	struct thread *childern[30];
+	struct thread *childern[CHILD_MAX];
+
 	struct intr_frame user_if;
 	
 #endif

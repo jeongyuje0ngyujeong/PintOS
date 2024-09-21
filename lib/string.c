@@ -271,7 +271,7 @@ strlen (const char *string) {
 	const char *p;
 
 	ASSERT (string);
-
+	// printf("여깅ㄴ잘???\n");
 	for (p = string; *p != '\0'; p++)
 		continue;
 	return p - string;

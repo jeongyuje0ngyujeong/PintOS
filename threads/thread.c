@@ -554,13 +554,13 @@ init_thread (struct thread *t, const char *name, int priority) {
 	list_push_back(&all_thread, &t->all_elem);
 
 	#ifdef USERPROG
-		for (int i = 0; i < 30; i++)
+		for (int i = 0; i < FD_MAX; i++)
 		{
 			t->fd_table[i] = NULL;
 			t->childern[i] = NULL;
 		}
 
-		t->file_status = 0;
+		t->exit_status = 0;
 		t->is_user = false;
 
 		sema_init(&t->wait_sema, 0);
@@ -570,7 +570,7 @@ init_thread (struct thread *t, const char *name, int priority) {
 		
 		if (name != "main") {
 			t->parent_thread = thread_current();
-			for (int i = 0; i < 30; i++) {
+			for (int i = 0; i < CHILD_MAX; i++) {
 				if (thread_current()->childern[i] == NULL)
 				{
 					thread_current()->childern[i] = t;
