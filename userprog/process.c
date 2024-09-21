@@ -209,7 +209,7 @@ process_exec (void *f_name) {
 
 	/* And then load the binary */
 	success = load (file_name, &_if);
-	// printf("success: %d\n", success);
+	printf("success: %d\n", success);
 
 	/* If load failed, quit. */
 	palloc_free_page (file_name);
@@ -399,9 +399,9 @@ load (const char *file_name, struct intr_frame *if_) {
 	char *argv[LOADER_ARGS_LEN/2 + 1];
 	char *token, *save_ptr;
 	int argc = 0;
-
-	/* file name 복사한 부분을 passing 하여 진행 - 추후 사용 가능성이 있을 수도 있기에 확장성을 위하여 */
-	 strlcpy(argument, file_name, LOADER_ARGS_LEN);  
+	
+	/* 추후 사용 가능성이 있을 수도 있기에 확장성을 위하여 */
+	strlcpy(argument, file_name, LOADER_ARGS_LEN);  
 	
 	for (token = strtok_r (argument, " ", &save_ptr); token != NULL; token = strtok_r (NULL, " ", &save_ptr))
 	{

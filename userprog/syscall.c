@@ -144,7 +144,7 @@ open(char *file_name) {
 }
 
 int
-filesize(int fd) {
+filesize (int fd) {
 	if (fd < 3) {
 		thread_current()->exit_status = -1;
 		return -1;
@@ -166,11 +166,18 @@ exec(char *cmd_line, struct intr_frame *f){
 	/* pid */
 	char *fn_copy = palloc_get_page(PAL_ZERO);
 	if (fn_copy == NULL)
-		return TID_ERROR;
-	
+		exit(-1);
+
+	// int file_name_size = strlen(cmd_line) + 1;
 	strlcpy(fn_copy, cmd_line, PGSIZE);
-	if (process_exec(cmd_line) < 0) 
+
+	// printf("process exec 실행한다1!!\n");
+	if (process_exec(cmd_line) < 0) {
 		f->R.rax = -1;
+
+		thread_current()->exit_status = -1;
+		thread_exit();
+	}
 }
 
 int
