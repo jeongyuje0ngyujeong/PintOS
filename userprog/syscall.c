@@ -166,7 +166,6 @@ exec(char *cmd_line, struct intr_frame *f){
 	if (fn_copy == NULL)
 		exit(-1);
 
-	// int file_name_size = strlen(cmd_line) + 1;
 	strlcpy(fn_copy, cmd_line, PGSIZE);
 
 	// printf("process exec 실행한다1!!\n");

@@ -293,12 +293,13 @@ void
 				}
 			}
 			// printf("죽기직전 마지막 세마하기,,,직전,,,\n");
+
+			/* child는 yield가 되어 바로 sema_up 후 sema down 이하 코드가 실행되는 것은 아님! 죽기직전에 모든걸 다 맞치고 sema down 실행해야 함 */
 			if (curr->exec_file != NULL) {
 				file_close(curr->exec_file);
 				curr->exec_file == NULL;
 			}
 
-			/* child는 yield가 되어 바로 sema_up 후 sema down 이하 코드가 실행되는 것은 아님! 죽기직전에 모든걸 다 맞치고 sema down 실행해야 함 */
 			sema_down(&curr->free_sema);
 		} else {
 			process_cleanup();

@@ -1,8 +1,6 @@
 #ifndef THREADS_THREAD_H
 #define THREADS_THREAD_H
 
-#define VM
-
 #include <debug.h>
 #include <list.h>
 #include <stdint.h>
@@ -12,6 +10,7 @@
 #include "vm/vm.h"
 #endif
 
+#define USERPROG
 
 /* States in a thread's life cycle. */
 enum thread_status {
