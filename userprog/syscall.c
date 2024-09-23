@@ -104,20 +104,13 @@ read(int fd, void *buffer, size_t size) {
 tid_t
 fork (char *thread_name, struct intr_frame *user_frame){
 	memcpy(&thread_current()->user_if, user_frame, sizeof(struct intr_frame));
-	/* fork를 통해 복제된 thread와 thread 생성시 만들어진 child는 다른데..ㅠㅠㅠ */
-	// printf("init fork\n");
-	tid_t child_tid = process_fork (thread_name, user_frame);
-	if (child_tid == -1) return child_tid;
 
-	for (int i = 0; i < 30; i++)
-	{
-		if (!thread_current()->childern[i]) {
-			thread_current()->childern[i] = get_thread_to_tid(child_tid);
-			// printf("tid: %d\n", child_tid);
-			return child_tid;
-		}
-	}
-	return -1;
+	/* fork를 통해 복제된 thread와 thread 생성시 만들어진 child는 다른데..ㅠㅠㅠ */
+
+	tid_t child_tid = process_fork (thread_name, user_frame);
+	if (child_tid == -1) return TID_ERROR;
+
+	return child_tid;
 }
 
 int
@@ -136,11 +129,16 @@ open(char *file_name) {
 	if (cur_file == NULL) return -1;
 	
 	int i = 3;
-	while (t->fd_table[i] != NULL)
+	while (t->fd_table[i] != NULL && i < FD_MAX) 
 		i++;
 	
-	t->fd_table[i] = cur_file;
-	return i;
+	if (i < FD_MAX) {
+		t->fd_table[i] = cur_file;
+		return i;
+	}
+	
+	file_close(cur_file);
+	return -1;
 }
 
 int
@@ -186,8 +184,10 @@ wait(tid_t tid) {
 }
 
 bool
-remove (struct intr_frame *f) {
-	char *file_name = f->R.rdi;
+remove (char *file_name) {
+	if (file_name == NULL || !is_user_vaddr(file_name) || pml4_get_page(thread_current()->pml4, file_name) == NULL)
+		return false;
+	
 	return filesys_remove(file_name);
 }
 

@@ -562,6 +562,7 @@ init_thread (struct thread *t, const char *name, int priority) {
 
 		t->exit_status = 0;
 		t->is_user = false;
+		t->exec_file = NULL;
 
 		sema_init(&t->wait_sema, 0);
 		sema_init(&t->fork_sema, 0);
@@ -813,7 +814,7 @@ get_thread_to_tid (tid_t child_tid) {
 	struct thread *curr = thread_current();
 	for (int i = 0; i < CHILD_MAX; i++)
 	{
-		if (curr->childern[i]->tid == child_tid) 
+		if (curr->childern[i] != NULL && curr->childern[i]->tid == child_tid) 
 			return curr->childern[i];
 		
 	}

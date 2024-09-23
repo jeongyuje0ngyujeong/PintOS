@@ -1,6 +1,8 @@
 #ifndef THREADS_THREAD_H
 #define THREADS_THREAD_H
 
+#define VM
+
 #include <debug.h>
 #include <list.h>
 #include <stdint.h>
@@ -10,7 +12,6 @@
 #include "vm/vm.h"
 #endif
 
-#define USERPROG
 
 /* States in a thread's life cycle. */
 enum thread_status {
@@ -115,6 +116,8 @@ struct thread {
 	int exit_status;
 	int wait_status;
 	bool is_user;
+
+	struct file *exec_file;
 
 	struct semaphore wait_sema;
 	struct semaphore fork_sema;

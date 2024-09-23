@@ -84,8 +84,16 @@ process_fork (const char *name, struct intr_frame *if_ UNUSED) {
 	struct thread *curr = thread_current();
 	
 	sema_down(&curr->fork_sema);
+	struct thread *child = get_thread_to_tid(tid);
 
-	// printf("tid: %d\n", tid);
+	if (child->exit_status == -1) {
+		for (int i = 0; i < CHILD_MAX; i++)
+		{
+			if (child == curr->childern[i]) curr->childern[i] = NULL;
+			return -1;
+		}	
+	}
+	
 	return tid;
 }
 	
@@ -106,10 +114,12 @@ duplicate_pte (uint64_t *pte, void *va, void *aux) {
 	
 	/* 2. Resolve VA from the parent's page map level 4. */
 	parent_page = pml4_get_page (parent->pml4, va);
+	if (parent_page == NULL) return TID_ERROR;
 
 	/* 3. TODO: Allocate new PAL_USER page for the child and set result to
 	 *    TODO: NEWPAGE. */
 	newpage = palloc_get_page(PAL_USER);
+	if (parent_page == NULL) return TID_ERROR;
 
 	/* 4. TODO: Duplicate parent's page to the new page and
 	 *    TODO: check whether parent's page is writable or not (set WRITABLE
@@ -122,7 +132,7 @@ duplicate_pte (uint64_t *pte, void *va, void *aux) {
 	 *    permission. */
 	if (!pml4_set_page (current->pml4, va, newpage, writable)) {
 		palloc_free_page(newpage);
-		return false;
+		return TID_ERROR;
 	}
 	return true;
 }
@@ -169,7 +179,7 @@ __do_fork (void *aux) {
 	 * TODO:       from the fork() until this function successfully duplicates
 	 * TODO:       the resources of parent.*/
 
-	for (int i = 3; i < 30; i++)
+	for (int i = 3; i < FD_MAX; i++)
 	{
 		if (parent->fd_table[i] != NULL)
 			current->fd_table[i] = file_duplicate(parent->fd_table[i]);
@@ -186,6 +196,7 @@ __do_fork (void *aux) {
 
 error:
 	sema_up(&parent->fork_sema);
+	current->parent_thread = NULL;
 	thread_exit ();
 }
 
@@ -237,12 +248,15 @@ int
 process_wait (tid_t child_tid UNUSED) {
 	struct thread *child = get_thread_to_tid(child_tid);
 
-	if (child == NULL) exit(-1);
+	if (child == NULL) return -1;
 	
 	sema_down(&child->wait_sema);
-
-	bool is_child = false;
+	
 	struct thread *parent = child->parent_thread;
+	if (parent != thread_current())
+		return -1;
+	
+	bool is_child = false;
 
 	for (int i = 0; i < CHILD_MAX; i++) {
 		if (parent->childern[i] == child) {
@@ -260,7 +274,6 @@ process_wait (tid_t child_tid UNUSED) {
 		
 	return child->exit_status;
 
-	
 }
 
 /* Exit the process. This function is called by thread_exit (). */
@@ -270,21 +283,28 @@ void
 	if (curr->is_user) {
 		printf("%s: exit(%d)\n", curr->name, curr->exit_status);
 
-		if (thread_current()->parent_thread != NULL) {
+		if (thread_current()->parent_thread != NULL){
 			sema_up(&curr->wait_sema);
-		}
-		
-		for (int i = 3; i < 30; i++) {
-			if (curr->fd_table[i] != NULL) {
-				file_close(curr->fd_table[i]);
-				curr->fd_table[i] = NULL;
-			}
-		}
 
-		// printf("죽기직전 마지막 세마하기,,,직전,,,\n");
-		sema_down(&curr->free_sema);
+			for (int i = 3; i < 30; i++) {
+				if (curr->fd_table[i] != NULL) {
+					file_close(curr->fd_table[i]);
+					curr->fd_table[i] = NULL;
+				}
+			}
+			// printf("죽기직전 마지막 세마하기,,,직전,,,\n");
+			if (curr->exec_file != NULL) {
+				file_close(curr->exec_file);
+				curr->exec_file == NULL;
+			}
+
+			/* child는 yield가 되어 바로 sema_up 후 sema down 이하 코드가 실행되는 것은 아님! 죽기직전에 모든걸 다 맞치고 sema down 실행해야 함 */
+			sema_down(&curr->free_sema);
+		} else {
+			process_cleanup();
+		}
 	}
-		process_cleanup ();
+	process_cleanup ();
 }
 
 /* Free the current process's resources. */
@@ -522,9 +542,13 @@ load (const char *file_name, struct intr_frame *if_) {
 
 	success = true;
 
+	t->exec_file = file;
+	file_deny_write(t->exec_file);
+
 done:
 	/* We arrive here whether the load is successful or not. */
-	file_close (file);
+	if (!success)
+		file_close (file);
 	return success;
 }
 
