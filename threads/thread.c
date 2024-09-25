@@ -1,4 +1,4 @@
-#include "threads/thread.h"
+ #include "threads/thread.h"
 #include <debug.h>
 #include <stddef.h>
 #include <random.h>
@@ -811,13 +811,16 @@ thread_wake(void) {
 
 struct thread *
 get_thread_to_tid (tid_t child_tid) {
-	struct thread *curr = thread_current();
-	for (int i = 0; i < CHILD_MAX; i++)
-	{
-		if (curr->childern[i] != NULL && curr->childern[i]->tid == child_tid) 
-			return curr->childern[i];
-		
-	}
-	return NULL;
+	#ifdef USERPROG
+		struct thread *curr = thread_current();
+		for (int i = 0; i < CHILD_MAX; i++)
+		{
+			if (curr->childern[i] != NULL && curr->childern[i]->tid == child_tid) 
+				return curr->childern[i];
+			
+		}
+		return NULL;
+	#endif
+		return NULL;
 }
 

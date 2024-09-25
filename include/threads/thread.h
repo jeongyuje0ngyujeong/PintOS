@@ -6,11 +6,12 @@
 #include <stdint.h>
 #include "threads/interrupt.h"
 #include "threads/synch.h"
+#define VM
+
 #ifdef VM
 #include "vm/vm.h"
 #endif
 
-#define USERPROG
 
 /* States in a thread's life cycle. */
 enum thread_status {
