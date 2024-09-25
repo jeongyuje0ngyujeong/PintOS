@@ -49,7 +49,6 @@ struct page {
 	/* Your implementation */
 	struct hash_elem hash_elem;
 
-
 	/* Per-type data are binded into the union.
 	 * Each function automatically detects the current union */
 	union {
@@ -88,9 +87,7 @@ struct page_operations {
  * We don't want to force you to obey any specific design for this struct.
  * All designs up to you for this. */
 struct supplemental_page_table {
-	
-	/* Hash로 수정 필요 */
-	struct page *page;
+	struct hash *hash;
 
 };
 
