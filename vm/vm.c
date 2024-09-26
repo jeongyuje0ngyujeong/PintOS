@@ -4,6 +4,7 @@
 #include "vm/vm.h"
 #include "vm/inspect.h"
 #include "hash.h"
+#include "threads/mmu.h"
 
 /* Initializes the virtual memory subsystem by invoking each subsystem's
  * intialize codes. */
@@ -95,12 +96,6 @@ spt_remove_page (struct supplemental_page_table *spt, struct page *page) {
 	return true;
 }
 
-static void
-frame_init (struct frame *frame) {
-	frame->kva = NULL;
-	frame->page = NULL;
-}
-
 /* Get the struct frame, that will be evicted. */
 static struct frame *
 vm_get_victim (void) {
@@ -127,10 +122,13 @@ vm_evict_frame (void) {
 static struct frame *
 vm_get_frame (void) {
 	struct frame *frame = NULL;
-	frame = palloc_get_page(PAL_USER);
-	if (frame == NULL) PANIC("todo");
 
-	frame_init(frame);
+	/* frame의 물리주소를 할당할 것이므로 frame kva를 palloc get page 해줘야 함*/
+	frame->kva = palloc_get_page(PAL_USER);
+	if (frame->kva == NULL) PANIC("TODO");
+
+	/* page는 가상주소공간에서 할당 받을 것이므로 NULL로 초기화 해줘야 함 */
+	frame->page = NULL;
 
 	ASSERT (frame != NULL);
 	ASSERT (frame->page == NULL);
@@ -187,8 +185,9 @@ vm_do_claim_page (struct page *page) {
 	page->frame = frame;
 
 	/* TODO: Insert page table entry to map page's VA to frame's PA. */
+	if (!pml4_set_page (thread_current()->pml4, page->va, frame->kva, page->writable));
+		return false;
 	
-
 	return swap_in (page, frame->kva);
 }
 

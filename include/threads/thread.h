@@ -114,7 +114,7 @@ struct thread {
 #ifdef USERPROG
 	/* Owned by userprog/process.c. */
 	uint64_t *pml4;                     /* Page map level 4 */
-	struct file *fd_table[FD_MAX];			/* file descriptor table */
+	struct file *fd_table[FD_MAX];		/* file descriptor table */
 	int exit_status;
 	int wait_status;
 	bool is_user;

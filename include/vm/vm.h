@@ -49,6 +49,8 @@ struct page {
 	/* Your implementation */
 	struct hash_elem hash_elem;
 
+	bool writable;
+
 	/* Per-type data are binded into the union.
 	 * Each function automatically detects the current union */
 	union {
@@ -63,6 +65,7 @@ struct page {
 
 /* The representation of "frame" */
 struct frame {
+	/* 물리주소라고 생각해야함 */
 	void *kva;
 	struct page *page;
 };
