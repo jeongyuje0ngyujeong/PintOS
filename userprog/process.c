@@ -224,7 +224,7 @@ process_exec (void *f_name) {
 
 	/* And then load the binary */
 	success = load (file_name, &_if);
-	printf("load success: %d\n", success);
+	// printf("load success: %d\n", success);
 
 	/* If load failed, quit. */
 	palloc_free_page (file_name);
@@ -232,7 +232,7 @@ process_exec (void *f_name) {
 		return -1;
 
 	// hex_dump(_if.rsp, _if.rsp, USER_STACK - _if.rsp, true);
-
+	printf("안녕 프로세스잌ㅅ\n");
 	/* Start switched process. */
 	do_iret (&_if);
 	NOT_REACHED ();
@@ -506,10 +506,10 @@ load (const char *file_name, struct intr_frame *if_) {
 					read_bytes = 0;
 					zero_bytes = ROUND_UP (page_offset + phdr.p_memsz, PGSIZE);
 				}
-				printf("load 잘 되고 있니,,? load segment 이전\n");
+				// printf("load 잘 되고 있니,,? load segment 이전\n");
 				if (!load_segment (file, file_page, (void *) mem_page,
 						read_bytes, zero_bytes, writable)){
-					printf("load_segemnt 실패했니..?\n");
+					// printf("load_segemnt 실패했니..?\n");
 					goto done;
 				}
 			}
@@ -518,19 +518,22 @@ load (const char *file_name, struct intr_frame *if_) {
 			break;
 		}
 	}
+	// printf("민경이 똥\n");
 
 	/* Set up stack. */
-	if (!setup_stack (if_))
+	if (!setup_stack (if_)){
+		printf("setup_stack fail?\n");
 		goto done;
-
+	}
 	/* Start address. */
 	if_->rip = ehdr.e_entry;
 
-	/* TODO: Your code goes here.
-	* TODO: Implement argument passing (see project2/argument_passing.html). */
+	/* Your code goes here.
+	 * Implement argument passing (see project2/argument_passing.html). */
 
 	for (i = argc-1; i >= 0; i--){
 		if_->rsp -= strlen(argv[i]) + 1;
+		// printf("여기가 오류임?11111\n");
 		strlcpy((char*)if_->rsp, argv[i], strlen(argv[i])+1);
 		argv[i] = (char*)if_->rsp;
 	}
@@ -869,6 +872,8 @@ lazy_load_segment (struct page *page, void *aux) {
 	uint32_t zero_bytes = info->zero_bytes;
 	bool writable = info->writable;
 
+	printf("read_bytes: %d\n", read_bytes);
+
 	ASSERT ((read_bytes + zero_bytes) % PGSIZE == 0);
 	ASSERT (pg_ofs (upage) == 0);
 	ASSERT (ofs % PGSIZE == 0);
@@ -912,17 +917,7 @@ load_segment (struct file *file, off_t ofs, uint8_t *upage,
 	ASSERT (pg_ofs (upage) == 0);
 	ASSERT (ofs % PGSIZE == 0);
 
-	/* load_segment_info init */
-
-	struct load_segment_info *info = malloc(sizeof(struct load_segment_info));
-	if (info == NULL) PANIC("TODO");
-	
-	info->file = file; //데이터를 읽어올 파일.
-	info->ofs = ofs; //파일에서 데이터를 읽기 시작할 오프셋.
-	info->upage = upage; //가상 메모리 주소.
-	info->read_bytes = read_bytes; //읽어야 할 바이트 수.
-	info->zero_bytes = zero_bytes; //0으로 채워야 할 바이트 수.
-	info->writable = writable; //메모리가 쓰기 가능한지 여부.
+	/* load_segment_info init */	
 
 	while (read_bytes > 0 || zero_bytes > 0) {
 		/* Do calculate how to fill this page.
@@ -931,9 +926,20 @@ load_segment (struct file *file, off_t ofs, uint8_t *upage,
 		size_t page_read_bytes = read_bytes < PGSIZE ? read_bytes : PGSIZE;
 		size_t page_zero_bytes = PGSIZE - page_read_bytes;
 
+		/* page가 생성될 때마다 malloc 해줘야 함 */
+		struct load_segment_info *info = malloc(sizeof(struct load_segment_info));
+		if (info == NULL) PANIC("TODO");
+	
+		info->file = file; //데이터를 읽어올 파일.
+		info->ofs = ofs; //파일에서 데이터를 읽기 시작할 오프셋.
+		info->upage = upage; //가상 메모리 주소.
+		info->read_bytes = page_read_bytes; //읽어야 할 바이트 수.
+		info->zero_bytes = page_zero_bytes; //0으로 채워야 할 바이트 수.
+		info->writable = writable; //메모리가 쓰기 가능한지 여부.
+
 		/* Set up aux to pass information to the lazy_load_segment. */
 		if (!vm_alloc_page_with_initializer (VM_ANON, upage,
-					writable, lazy_load_segment, &info)) {
+					writable, lazy_load_segment, info)) {
 			return false;
 		}
 
@@ -941,7 +947,11 @@ load_segment (struct file *file, off_t ofs, uint8_t *upage,
 		read_bytes -= page_read_bytes;
 		zero_bytes -= page_zero_bytes;
 		upage += PGSIZE;
+		ofs += page_read_bytes;
+		// printf("load_segment에서의 readbytes: %d\n", info->read_bytes);
+		// printf("load_segment에서의 zerobytes: %d\n", info->zero_bytes);
 	}
+
 	return true;
 }
 
@@ -955,9 +965,12 @@ setup_stack (struct intr_frame *if_) {
 	 * If success, set the rsp accordingly.
 	 * You should mark the page is stack. */
 	/* Your code goes here */
-
-	if (!vm_alloc_page(VM_UNINIT, stack_bottom, true)) return false;
-	if (!vm_claim_page(stack_bottom)) return false;
+	printf("alloc ? %d\n", vm_alloc_page(VM_ANON | VM_MARKER_0, stack_bottom, true));
+	// if (!vm_alloc_page(VM_ANON | VM_MARKER_0, stack_bottom, true)) return false;
+	if (!vm_claim_page(stack_bottom)){
+		return false;	
+	} 
+	if_->rsp = USER_STACK;
 
 	return true;
 }
