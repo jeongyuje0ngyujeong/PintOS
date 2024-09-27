@@ -347,6 +347,7 @@ process_activate (struct thread *next) {
 	pml4_activate (next->pml4);
 
 	/* Set thread's kernel stack for use in processing interrupts. */
+	/* 테스크 전환에 필요한 정보들을 저장하고 전환 시 사용되는 구조체 : struct task state (tss)  */
 	tss_update (next);
 }
 
@@ -915,13 +916,13 @@ load_segment (struct file *file, off_t ofs, uint8_t *upage,
 
 	struct load_segment_info *info = malloc(sizeof(struct load_segment_info));
 	if (info == NULL) PANIC("TODO");
-
-	info->file = file;
-	info->ofs = ofs;
-	info->upage = upage;
-	info->read_bytes = read_bytes;
-	info->zero_bytes = zero_bytes;
-	info->writable = writable;
+	
+	info->file = file; //데이터를 읽어올 파일.
+	info->ofs = ofs; //파일에서 데이터를 읽기 시작할 오프셋.
+	info->upage = upage; //가상 메모리 주소.
+	info->read_bytes = read_bytes; //읽어야 할 바이트 수.
+	info->zero_bytes = zero_bytes; //0으로 채워야 할 바이트 수.
+	info->writable = writable; //메모리가 쓰기 가능한지 여부.
 
 	while (read_bytes > 0 || zero_bytes > 0) {
 		/* Do calculate how to fill this page.
@@ -955,6 +956,9 @@ setup_stack (struct intr_frame *if_) {
 	 * You should mark the page is stack. */
 	/* Your code goes here */
 
-	return success;
+	if (!vm_alloc_page(VM_UNINIT, stack_bottom, true)) return false;
+	if (!vm_claim_page(stack_bottom)) return false;
+
+	return true;
 }
 #endif /* VM */
