@@ -45,6 +45,27 @@ static struct frame *vm_evict_frame (void);
 bool
 vm_alloc_page_with_initializer (enum vm_type type, void *upage, bool writable,
 		vm_initializer *init, void *aux) {
+		
+	/* page initalizer */
+	struct page *page = palloc_get_page(PAL_USER);
+	if (page == NULL) PANIC("TODO");
+
+	bool (*initializer)(struct page *, enum vm_type, void *) = NULL;
+
+	switch (type) {
+	case VM_ANON:
+		initializer = anon_initializer;
+		break;
+
+	case VM_FILE:
+		initializer = file_backed_initializer;
+		break;
+
+	default:
+		break;
+	}
+
+	uninit_new(page, upage, init, type, aux, initializer);
 
 	ASSERT (VM_TYPE(type) != VM_UNINIT)
 
@@ -57,6 +78,8 @@ vm_alloc_page_with_initializer (enum vm_type type, void *upage, bool writable,
 		 * TODO: should modify the field after calling the uninit_new. */
 
 		/* TODO: Insert the page into the spt. */
+		spt_insert_page(spt, page);
+		return true;
 	}
 err:
 	return false;
@@ -67,13 +90,12 @@ struct page *
 spt_find_page (struct supplemental_page_table *spt UNUSED, void *va UNUSED) {
 	/* 더미 page를 설정해서 va값만 일단 대충 넣어야 하기 때문에 주소값이 아닌 그 자체로 저장 */
 	struct page page;
+	struct hash_elem *hash_elem;
+
 	page.va = va;
+	hash_elem = hash_find(&spt->hash, &page.hash_elem);
 
-	/* 오류 날 수 있음!! */
-	page = *hash_entry(hash_find(spt->hash, &page.hash_elem), struct page, hash_elem);
-
-	if (&page == NULL) return NULL;
-	return &page;
+	return hash_elem != NULL ? hash_entry(hash_elem, struct page, hash_elem) : NULL;
 }
 
 /* Insert PAGE into spt with validation. */
@@ -83,9 +105,9 @@ spt_insert_page (struct supplemental_page_table *spt UNUSED,
 	int is_succ = false;
 	if (spt_find_page(spt, page->va) != NULL) return is_succ;
 
-	struct hash_elem *result = hash_insert(spt->hash, &page->hash_elem);
+	struct hash_elem *result = hash_insert(&spt->hash, &page->hash_elem);
 	if (result != NULL) return is_succ;
-
+	
 	is_succ = true;
 	return is_succ;
 }
@@ -150,10 +172,9 @@ vm_handle_wp (struct page *page UNUSED) {
 bool
 vm_try_handle_fault (struct intr_frame *f UNUSED, void *addr UNUSED,
 		bool user UNUSED, bool write UNUSED, bool not_present UNUSED) {
+
 	struct supplemental_page_table *spt UNUSED = &thread_current ()->spt;
-	struct page *page = NULL;
-	/* TODO: Validate the fault */
-	/* TODO: Your code goes here */
+	struct page *page = spt_find_page(spt, addr);
 
 	return vm_do_claim_page (page);
 }
@@ -194,7 +215,7 @@ vm_do_claim_page (struct page *page) {
 /* Initialize new supplemental page table */
 void
 supplemental_page_table_init (struct supplemental_page_table *spt UNUSED) {
-	hash_init(spt->hash, page_hash, page_less, NULL);
+	hash_init(&spt->hash, page_hash, page_less, NULL);
 
 }
 

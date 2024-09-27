@@ -177,11 +177,11 @@ __do_fork (void *aux) {
 		goto error;
 #endif
 
-	/* TODO: Your code goes here.
-	 * TODO: Hint) To duplicate the file object, use `file_duplicate`
-	 * TODO:       in include/filesys/file.h. Note that parent should not return
-	 * TODO:       from the fork() until this function successfully duplicates
-	 * TODO:       the resources of parent.*/
+	/* 
+	 * Hint) To duplicate the file object, use `file_duplicate`
+	 *        in include/filesys/file.h. Note that parent should not return
+	 *        from the fork() until this function successfully duplicates
+	 *        the resources of parent.*/
 
 	for (int i = 3; i < FD_MAX; i++)
 	{
@@ -224,7 +224,7 @@ process_exec (void *f_name) {
 
 	/* And then load the binary */
 	success = load (file_name, &_if);
-	// printf("success: %d\n", success);
+	printf("load success: %d\n", success);
 
 	/* If load failed, quit. */
 	palloc_free_page (file_name);
@@ -505,9 +505,12 @@ load (const char *file_name, struct intr_frame *if_) {
 					read_bytes = 0;
 					zero_bytes = ROUND_UP (page_offset + phdr.p_memsz, PGSIZE);
 				}
+				printf("load 잘 되고 있니,,? load segment 이전\n");
 				if (!load_segment (file, file_page, (void *) mem_page,
-						read_bytes, zero_bytes, writable))
+						read_bytes, zero_bytes, writable)){
+					printf("load_segemnt 실패했니..?\n");
 					goto done;
+				}
 			}
 			else
 				goto done;
@@ -852,9 +855,39 @@ install_page (void *upage, void *kpage, bool writable) {
 
 static bool
 lazy_load_segment (struct page *page, void *aux) {
-	/* TODO: Load the segment from the file */
-	/* TODO: This called when the first page fault occurs on address VA. */
-	/* TODO: VA is available when calling this function. */
+/* 하나의 페이지를 로드하기 위한 함수야 근데 page fault가 날 때, */
+/* lazy_load_segment가 실행되면서 load_segment() 일과 같은 */
+/* 일을 실행하는 거야                                     */
+
+	struct load_segment_info *info = aux;
+
+	struct file *file = info->file;
+	off_t ofs = info->ofs;
+	uint8_t *upage = info->upage;
+	uint32_t read_bytes = info->read_bytes;
+	uint32_t zero_bytes = info->zero_bytes;
+	bool writable = info->writable;
+
+	ASSERT ((read_bytes + zero_bytes) % PGSIZE == 0);
+	ASSERT (pg_ofs (upage) == 0);
+	ASSERT (ofs % PGSIZE == 0);
+
+	file_seek(file, ofs);
+
+	/* Kernel page */
+	void *kpage = page->frame->kva;
+
+	/* Load this page. */
+	if (file_read (file, kpage, read_bytes) != (int) read_bytes) {
+		palloc_free_page (kpage);
+		return false;
+	}
+	
+	memset (kpage + read_bytes, 0, zero_bytes);
+
+	return true;
+	
+
 }
 
 /* Loads a segment starting at offset OFS in FILE at address
@@ -878,6 +911,18 @@ load_segment (struct file *file, off_t ofs, uint8_t *upage,
 	ASSERT (pg_ofs (upage) == 0);
 	ASSERT (ofs % PGSIZE == 0);
 
+	/* load_segment_info init */
+
+	struct load_segment_info *info = malloc(sizeof(struct load_segment_info));
+	if (info == NULL) PANIC("TODO");
+
+	info->file = file;
+	info->ofs = ofs;
+	info->upage = upage;
+	info->read_bytes = read_bytes;
+	info->zero_bytes = zero_bytes;
+	info->writable = writable;
+
 	while (read_bytes > 0 || zero_bytes > 0) {
 		/* Do calculate how to fill this page.
 		 * We will read PAGE_READ_BYTES bytes from FILE
@@ -885,11 +930,11 @@ load_segment (struct file *file, off_t ofs, uint8_t *upage,
 		size_t page_read_bytes = read_bytes < PGSIZE ? read_bytes : PGSIZE;
 		size_t page_zero_bytes = PGSIZE - page_read_bytes;
 
-		/* TODO: Set up aux to pass information to the lazy_load_segment. */
-		void *aux = NULL;
+		/* Set up aux to pass information to the lazy_load_segment. */
 		if (!vm_alloc_page_with_initializer (VM_ANON, upage,
-					writable, lazy_load_segment, aux))
+					writable, lazy_load_segment, &info)) {
 			return false;
+		}
 
 		/* Advance. */
 		read_bytes -= page_read_bytes;
@@ -905,10 +950,10 @@ setup_stack (struct intr_frame *if_) {
 	bool success = false;
 	void *stack_bottom = (void *) (((uint8_t *) USER_STACK) - PGSIZE);
 
-	/* TODO: Map the stack on stack_bottom and claim the page immediately.
-	 * TODO: If success, set the rsp accordingly.
-	 * TODO: You should mark the page is stack. */
-	/* TODO: Your code goes here */
+	/* Map the stack on stack_bottom and claim the page immediately.
+	 * If success, set the rsp accordingly.
+	 * You should mark the page is stack. */
+	/* Your code goes here */
 
 	return success;
 }
