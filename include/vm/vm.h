@@ -1,3 +1,5 @@
+// #include "vm/uninit.h"
+
 #ifndef VM_VM_H
 #define VM_VM_H
 #include <stdbool.h>
@@ -48,7 +50,6 @@ struct page {
 
 	/* Your implementation */
 	struct hash_elem hash_elem;
-
 	bool writable;
 
 	/* Per-type data are binded into the union.

@@ -1,5 +1,5 @@
 #include "userprog/syscall.h"
-#include <stdio.h>
+#include <stdio.h> 
 #include <syscall-nr.h>
 #include <string.h>
 #include "threads/interrupt.h"
@@ -61,6 +61,8 @@ exit(int status) {
 
 bool
 create(char *cur_file, size_t size) {
+	// /* 에러처리용 수정 */
+	// if (cur_file == NULL || !is_user_vaddr(cur_file))
 	if (cur_file == NULL || !is_user_vaddr(cur_file) || !pml4_get_page(thread_current()->pml4, cur_file))
 	{
 		thread_current()->exit_status = -1;
@@ -91,6 +93,7 @@ read(int fd, void *buffer, size_t size) {
 	else if (2 < fd && fd < 30 && buffer != NULL) 
 	{
 		struct file *file = thread_current()->fd_table[fd];
+		// printf("HELLO\n");
 		return file_read(file, (char *)buffer, size);
 	}
 	else 
@@ -116,7 +119,8 @@ fork (char *thread_name, struct intr_frame *user_frame){
 int
 open(char *file_name) {
 	struct thread *t = thread_current();
-
+	// /* 에러처리할 때 pml4 정리할 것 */
+	// if (file_name == NULL || !is_user_vaddr(file_name))
 	if (file_name == NULL || !is_user_vaddr(file_name) || !pml4_get_page(thread_current()->pml4, file_name))
 	{	
 		thread_current()->exit_status = -1;
@@ -154,6 +158,8 @@ filesize (int fd) {
 void
 exec(char *cmd_line, struct intr_frame *f){
 	/* address가 유효한 address인지 확인하는 코드 */
+	// /* 에러처리용 수정 */
+	// if (cmd_line == NULL || !is_user_vaddr(cmd_line))
 	if (cmd_line == NULL || !is_user_vaddr(cmd_line) || !pml4_get_page(thread_current()->pml4, cmd_line))
 	{	
 		thread_current()->exit_status = -1;
@@ -184,6 +190,8 @@ wait(tid_t tid) {
 
 bool
 remove (char *file_name) {
+	// /* 에러처리용 수정 */
+	// if (file_name == NULL || !is_user_vaddr(file_name))
 	if (file_name == NULL || !is_user_vaddr(file_name) || pml4_get_page(thread_current()->pml4, file_name) == NULL)
 		return false;
 	

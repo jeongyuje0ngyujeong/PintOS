@@ -28,7 +28,7 @@ uninit_new (struct page *page, void *va, vm_initializer *init,
 		enum vm_type type, void *aux,
 		bool (*initializer)(struct page *, enum vm_type, void *)) {
 	ASSERT (page != NULL);
-
+	// printf("uninit: %p\n", uninit_initialize);
 	*page = (struct page) {
 		.operations = &uninit_ops,
 		.va = va,
@@ -46,6 +46,7 @@ uninit_new (struct page *page, void *va, vm_initializer *init,
 static bool
 uninit_initialize (struct page *page, void *kva) {
 	struct uninit_page *uninit = &page->uninit;
+	// printf("uninit_initialize\n");
 
 	/* Fetch first, page_initialize may overwrite the values */
 	vm_initializer *init = uninit->init;

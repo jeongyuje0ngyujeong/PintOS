@@ -99,5 +99,6 @@ uint64_t hash_int (int);
 
 hash_hash_func *page_hash (const struct hash_elem *p_, void *aux);
 hash_less_func *page_less (const struct hash_elem *a_, const struct hash_elem *b_, void *aux);
+void page_destructor(struct hash_elem *e, void *aux);
 
 #endif /* lib/kernel/hash.h */

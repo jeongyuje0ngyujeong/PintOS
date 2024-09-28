@@ -277,19 +277,44 @@ hash_int (int i) {
 	return hash_bytes (&i, sizeof i);
 }
 
+// unsigned
+// page_hash (const struct hash_elem *p_, void *aux UNUSED) {
+//    const struct page *p = hash_entry (p_, struct page, hash_elem);
+//    return hash_bytes (&p->va, sizeof p->va);
+// }
+
+// bool
+// page_less (const struct hash_elem *a_,
+//            const struct hash_elem *b_, void *aux UNUSED) {
+//    const struct page *a = hash_entry (a_, struct page, hash_elem);
+//    const struct page *b = hash_entry (b_, struct page, hash_elem);
+
+//    return a->va < b->va;
+// }
+
 hash_hash_func *
 page_hash (const struct hash_elem *p_, void *aux UNUSED) {
-  const struct page *p = hash_entry (p_, struct page, hash_elem);
-  return hash_bytes (&p->va, sizeof p->va);
+	const struct page *p = hash_entry (p_, struct page, hash_elem);
+
+	return hash_bytes (&p->va, sizeof p->va);
 }
 
 /* Returns true if page a precedes page b. */
-hash_less_func *
+hash_less_func  *
 page_less (const struct hash_elem *a_,
            const struct hash_elem *b_, void *aux UNUSED) {
-  const struct page *a = hash_entry (a_, struct page, hash_elem);
-  const struct page *b = hash_entry (b_, struct page, hash_elem);
-  return a->va < b->va;
+	const struct page *a = hash_entry (a_, struct page, hash_elem);
+	const struct page *b = hash_entry (b_, struct page, hash_elem);
+	
+	return a->va < b->va;
+}
+
+void
+page_destructor(struct hash_elem *e, void *aux) {
+	struct page *page = hash_entry(e, struct page, hash_elem);
+
+	destroy(page);
+	free(page);
 }
 
 /* Returns the bucket in H that E belongs in. */
