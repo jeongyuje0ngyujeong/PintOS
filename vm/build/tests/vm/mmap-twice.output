@@ -22,8 +22,8 @@ Executing 'mmap-twice':
 (mmap-twice) compare mmap'd file 0 against data
 mmap-twice: exit(-1)
 Execution of 'mmap-twice' complete.
-Timer: 171 ticks
-Thread: 73 idle ticks, 70 kernel ticks, 29 user ticks
+Timer: 173 ticks
+Thread: 65 idle ticks, 78 kernel ticks, 31 user ticks
 hd0:0: 0 reads, 0 writes
 hd0:1: 124 reads, 256 writes
 hd1:0: 109 reads, 0 writes

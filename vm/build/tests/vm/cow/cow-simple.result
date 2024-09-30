@@ -1,2 +1,2 @@
 FAIL
-run: TIMEOUT
+run: two phys addrs should be the same.: FAILED

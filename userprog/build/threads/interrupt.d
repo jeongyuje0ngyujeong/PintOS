@@ -6,8 +6,13 @@ threads/interrupt.o: ../../threads/interrupt.c \
  ../../include/lib/kernel/stdio.h ../../include/threads/flags.h \
  ../../include/threads/intr-stubs.h ../../include/threads/io.h \
  ../../include/threads/thread.h ../../include/lib/kernel/list.h \
- ../../include/threads/synch.h ../../include/threads/mmu.h \
- ../../include/threads/pte.h ../../include/threads/vaddr.h \
- ../../include/threads/loader.h ../../include/devices/timer.h \
- ../../include/lib/round.h ../../include/intrinsic.h \
- ../../include/threads/mmu.h ../../include/userprog/gdt.h
+ ../../include/threads/synch.h ../../include/vm/vm.h \
+ ../../include/threads/palloc.h ../../include/lib/kernel/hash.h \
+ ../../include/lib/kernel/list.h ../../include/vm/uninit.h \
+ ../../include/vm/anon.h ../../include/vm/file.h \
+ ../../include/filesys/file.h ../../include/filesys/off_t.h \
+ ../../include/threads/mmu.h ../../include/threads/pte.h \
+ ../../include/threads/vaddr.h ../../include/threads/loader.h \
+ ../../include/devices/timer.h ../../include/lib/round.h \
+ ../../include/intrinsic.h ../../include/threads/mmu.h \
+ ../../include/userprog/gdt.h

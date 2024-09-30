@@ -309,7 +309,7 @@ page_less (const struct hash_elem *a_,
 	return a->va < b->va;
 }
 
-void
+hash_action_func *
 page_destructor(struct hash_elem *e, void *aux) {
 	struct page *page = hash_entry(e, struct page, hash_elem);
 

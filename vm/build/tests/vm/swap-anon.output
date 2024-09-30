@@ -17,21 +17,21 @@ Executing 'swap-anon':
 (swap-anon) write sparsely over page 0
 (swap-anon) write sparsely over page 512
 (swap-anon) write sparsely over page 1024
-Kernel PANIC at ../../vm/vm.c:227 in vm_get_frame(): TODO
-Call stack: 0x80042184f8 0x8004221489 0x8004221685 0x80042215d2 0x800421d2a7 0x8004209315 0x8004209733 0x400cac 0x400cf5 0Interrupt 0x0d (#GP General Protection Exception) at rip=8004215532
+Kernel PANIC at ../../vm/vm.c:230 in vm_get_frame(): TODO
+Call stack: 0x80042184f8 0x8004221515 0x8004221711 0x800422165e 0x800421d336 0x8004209315 0x8004209733 0x400cac 0x400cf5 0Interrupt 0x0d (#GP General Protection Exception) at rip=8004215532
  cr2=0000000000abbd60 error=               0
 rax 0000800423c3a000 rbx 0000800423d07800 rcx 00000080040b8000 rdx 00000000000003d4
 rsp 000000800423cd80 rbp 000000800423cd90 rsi 000000000000aa0f rdi 0000000000000000
-rip 0000008004215532 r8 000000800423cc98  r9 000000800421b9f4 r10 0000000000000000
+rip 0000008004215532 r8 000000800423cc98  r9 000000800421ba4a r10 0000000000000000
 r11 0000000000000202 r12 0000800423df1800 r13 0000800422ae4800 r14 0000800423cf1000
 r15 0000800420abcf00 rflags 00000006
 es: 0010 ds: 0010 cs: 0008 ss: 0010
 Kernel PANIC recursion at ../../userprog/exception.c:99 in kill().
-Timer: 441 ticks
-Thread: 74 idle ticks, 74 kernel ticks, 293 user ticks
+Timer: 460 ticks
+Thread: 46 idle ticks, 103 kernel ticks, 311 user ticks
 hd0:0: 0 reads, 0 writes
 hd0:1: 80 reads, 236 writes
 hd1:0: 104 reads, 0 writes
 hd1:1: 0 reads, 0 writes
-Console: 1768 characters output
+Console: 1769 characters output
 Key

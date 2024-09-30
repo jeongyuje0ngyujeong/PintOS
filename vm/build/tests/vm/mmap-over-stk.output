@@ -20,8 +20,8 @@ Executing 'mmap-over-stk':
 (mmap-over-stk) try to mmap over stack segment: FAILED
 mmap-over-stk: exit(1)
 Execution of 'mmap-over-stk' complete.
-Timer: 164 ticks
-Thread: 78 idle ticks, 64 kernel ticks, 23 user ticks
+Timer: 162 ticks
+Thread: 78 idle ticks, 64 kernel ticks, 21 user ticks
 hd0:0: 0 reads, 0 writes
 hd0:1: 111 reads, 250 writes
 hd1:0: 106 reads, 0 writes

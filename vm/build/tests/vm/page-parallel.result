@@ -1,2 +1,27 @@
 FAIL
-run: wait for child 0: FAILED
+Kernel panic in run: PANIC at ../../threads/thread.c:293 in thread_current(): assertion `is_thread (t)' failed.
+Call stack: 0x80042184f8 0x80042070e5 0x800420ac38 0x800421b8d6 0x800421baa3 0x800421ba87 0x80042169f7 0x800421612f 0x800421b936 0x80042159fb 0x800421c1eb 0x80042071ab 0x800421d36c 0x8004209315 0x8004209733 0x8004213b69 0x8004220421 0x800421f3d8 0x800421c630 0x800421c016 0x800421da73 0x800421dd3c 0x800421d491
+Translation of call stack:
+0x00000080042184f8: debug_panic (lib/kernel/debug.c:32)
+0x00000080042070e5: thread_current (threads/thread.c:294)
+0x000000800420ac38: lock_held_by_current_thread (threads/synch.c:316)
+0x000000800421b8d6: console_locked_by_current_thread (lib/kernel/console.c:111 (discriminator 2))
+0x000000800421baa3: putchar_have_lock (lib/kernel/console.c:173)
+0x000000800421ba87: vprintf_helper (lib/kernel/console.c:166)
+0x00000080042169f7: format_string (lib/stdio.c:529 (discriminator 3))
+0x000000800421612f: __vprintf (lib/stdio.c:284)
+0x000000800421b936: vprintf (lib/kernel/console.c:123)
+0x00000080042159fb: printf (lib/stdio.c:80)
+0x000000800421c1eb: process_exit (userprog/process.c:290)
+0x00000080042071ab: thread_exit (threads/thread.c:317)
+0x000000800421d36c: page_fault (userprog/exception.c:158)
+0x0000008004209315: intr_handler (threads/interrupt.c:352)
+0x0000008004209733: intr_entry (threads/intr-stubs.o:?)
+0x0000008004213b69: disk_read (devices/disk.c:219)
+0x0000008004220421: inode_read_at (filesys/inode.c:215)
+0x000000800421f3d8: file_read (filesys/file.c:74)
+0x000000800421c630: load (userprog/process.c:475)
+0x000000800421c016: process_exec (userprog/process.c:226)
+0x000000800421da73: exec (userprog/syscall.c:178)
+0x000000800421dd3c: syscall_handler (userprog/syscall.c:252)
+0x000000800421d491: no_sti (userprog/syscall-entry.o:?)

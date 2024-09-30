@@ -6,6 +6,7 @@
 #include "hash.h"
 #include "threads/mmu.h"
 
+#include "userprog/process.h"
 #include "vm/uninit.h"
 #include <string.h>
 
@@ -31,7 +32,7 @@ page_get_type (struct page *page) {
 	int ty = VM_TYPE (page->operations->type);
 	switch (ty) {
 		case VM_UNINIT:
-			return VM_TYPE (page->uninit.type);
+			return (page->uninit.type);
 		default:
 			return ty;
 	}
@@ -313,8 +314,7 @@ static bool
 vm_do_claim_page (struct page *page) {
 	//printf("어디에서 실패임?\n");
 	struct frame *frame = vm_get_frame ();
-	// printf("%p\n",frame);
-	//printf("여기에도 안들어오지?\n");
+	
 	/* Set links */
 	frame->page = page;
 	page->frame = frame;
@@ -360,9 +360,28 @@ supplemental_page_table_copy (struct supplemental_page_table *dst,
 
 	hash_first(&i, hash);
 	while (hash_next(&i)) {
-		struct page *page = hash_entry(hash_cur(&i), struct page, hash_elem);
-		if (!spt_insert_page(dst, page)) return false;
+		struct page *src_page = hash_entry(hash_cur(&i), struct page, hash_elem);
+		enum vm_type type = src_page->operations->type;
+		if (VM_TYPE(type) != VM_UNINIT) {
+			// bool (*initializer)(struct page *, enum vm_type, void *kva) = NULL;
+			// initializer = VM_TYPE(type) == VM_TYPE(VM_ANON) ? &anon_initializer : &file_backed_initializer;
+			if(!vm_alloc_page_with_initializer(type, src_page->va, src_page->writable, NULL, NULL))
+				return false;
+			
+			struct page *dst_page = spt_find_page(dst, src_page->va);
+			if (dst_page == NULL) return false;
 
+			if (!vm_do_claim_page(dst_page))
+				return false;
+			memcpy(dst_page->frame->kva, src_page->frame->kva, PGSIZE);
+
+		} else {
+			void *info = malloc(sizeof(struct load_segment_info));
+			memcpy(info, src_page->uninit.aux, sizeof(struct load_segment_info));
+			if(!vm_alloc_page_with_initializer(src_page->uninit.type, src_page->va, src_page->writable, src_page->uninit.init, info))
+				return false;
+			
+		}
 	}
 	return true;
 
@@ -374,14 +393,12 @@ supplemental_page_table_kill (struct supplemental_page_table *spt UNUSED) {
 	/* Destroy all the supplemental_page_table hold by thread and
 	 * writeback all the modified contents to the storage. */
 
-	struct hash *hash = &spt->hash;
-	struct hash_iterator i;
+	// // struct hash *hash = &spt->hash;
+	// // struct hash_iterator i;
 
-	hash_first(&i, hash);
-	while (hash_next(&i)) {
-		struct page *page = hash_entry(hash_cur(&i), struct page, hash_elem);
-		hash_destroy(hash, page_destructor);
+	hash_clear(&spt->hash, page_destructor);
 
-	}
+	// // struct page *page = hash_entry(hash_cur(&i), struct page, hash_elem);
+	// // hash_destroy(hash, page_destructor);
 	return true;
 }

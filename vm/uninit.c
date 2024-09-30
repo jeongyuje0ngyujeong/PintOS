@@ -52,7 +52,7 @@ uninit_initialize (struct page *page, void *kva) {
 	vm_initializer *init = uninit->init;
 	void *aux = uninit->aux;
 
-	/* TODO: You may need to fix this function. */
+	/* You may need to fix this function. */
 	return uninit->page_initializer (page, uninit->type, kva) &&
 		(init ? init (page, aux) : true);
 }
@@ -63,7 +63,25 @@ uninit_initialize (struct page *page, void *kva) {
  * PAGE will be freed by the caller. */
 static void
 uninit_destroy (struct page *page) {
-	struct uninit_page *uninit UNUSED = &page->uninit;
-	/* TODO: Fill this function.
-	 * TODO: If you don't have anything to do, just return. */
+	struct uninit_page *uninit = &page->uninit;
+	/* Fill this function.
+	 * If you don't have anything to do, just return. */
+
+	enum vm_type type = uninit->type;
+	switch (VM_TYPE(type)) {
+		case VM_ANON:
+			// initializer = &anon_initializer;
+			break;
+
+		case VM_FILE:
+			// uninit_new(page, pg_round_down(upage), init, type, aux, file_backed_initializer);
+			// initializer = &file_backed_initializer;
+			break;
+
+		default:
+			break;
+	}
+
+	if (uninit->aux != NULL) free(uninit->aux);
+	return;
 }

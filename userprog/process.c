@@ -857,106 +857,72 @@ install_page (void *upage, void *kpage, bool writable) {
  * If you want to implement the function for only project 2, implement it on the
  * upper block. */
 
-struct info_binary{
-   struct file *file;
-   off_t ofs;
-   uint8_t *upage;
-   uint32_t read_bytes;
-   uint32_t zero_bytes;
-   bool writable;
-};
+// static bool
+// lazy_load_segment (struct page *page, void *aux) {
+//    /* TODO: Load the segment from the file */
+//    /* TODO: This called when the first page fault occurs on address VA. */
+//    /* TODO: VA is available when calling this function. */
+
+//    struct file *file = ((struct info_binary *)aux)->file;
+//    off_t ofs = ((struct info_binary *)aux)->ofs;
+//    uint32_t read_bytes = ((struct info_binary *)aux)->read_bytes;
+//    uint32_t zero_bytes = ((struct info_binary *)aux)->zero_bytes;
+//    bool writable = ((struct info_binary *)aux)->writable;
+
+//    file_seek (file, ofs);
+// 	/* Do calculate how to fill this page.
+// 	* We will read PAGE_READ_BYTES bytes from FILE
+// 	* and zero the final PAGE_ZERO_BYTES bytes. */
+// 	size_t page_read_bytes = read_bytes < PGSIZE ? read_bytes : PGSIZE;
+// 	size_t page_zero_bytes = PGSIZE - page_read_bytes;
+
+//       /* Load this page. */
+// 	if (file_read (file, page->frame->kva, page_read_bytes ) != (int) page_read_bytes ) {
+// 		palloc_free_page (page);
+// 		return false;
+// 	}
+// 	memset (page->frame->kva + page_read_bytes, 0, page_zero_bytes);
+//    return true;
+// }
 
 static bool
 lazy_load_segment (struct page *page, void *aux) {
-   /* TODO: Load the segment from the file */
-   /* TODO: This called when the first page fault occurs on address VA. */
-   /* TODO: VA is available when calling this function. */
+/* 하나의 페이지를 로드하기 위한 함수야 근데 page fault가 날 때, */
+/* lazy_load_segment가 실행되면서 load_segment() 일과 같은 */
+/* 일을 실행하는 거야                                     */
 
-   struct file *file = ((struct info_binary *)aux)->file;
-   off_t ofs = ((struct info_binary *)aux)->ofs;
-   uint32_t read_bytes = ((struct info_binary *)aux)->read_bytes;
-   uint32_t zero_bytes = ((struct info_binary *)aux)->zero_bytes;
-   bool writable = ((struct info_binary *)aux)->writable;
-   // printf("read_bytes: %d\n", read_bytes);
-   // ASSERT ((read_bytes + zero_bytes) % PGSIZE == 0);
-   // ASSERT (pg_ofs (page) == 0);
-   // ASSERT (ofs % PGSIZE == 0);
+	struct file *file = ((struct load_segment_info *)aux)->file;
+	off_t ofs = ((struct load_segment_info *)aux)->ofs;
+	uint8_t *upage = ((struct load_segment_info *)aux)->upage;
+	uint32_t read_bytes = ((struct load_segment_info *)aux)->read_bytes;
+	uint32_t zero_bytes = ((struct load_segment_info *)aux)->zero_bytes;
+	bool writable = ((struct load_segment_info *)aux)->writable;
 
-   file_seek (file, ofs);
-   // while (read_bytes > 0 || zero_bytes > 0) {
-      /* Do calculate how to fill this page.
-       * We will read PAGE_READ_BYTES bytes from FILE
-       * and zero the final PAGE_ZERO_BYTES bytes. */
-      size_t page_read_bytes = read_bytes < PGSIZE ? read_bytes : PGSIZE;
-      size_t page_zero_bytes = PGSIZE - page_read_bytes;
+	// ASSERT ((read_bytes + zero_bytes) % PGSIZE == 0);
+	// ASSERT (pg_ofs (upage) == 0);
+	// ASSERT (ofs % PGSIZE == 0);
 
-      /* Get a page of memory. */
-      // uint8_t *kpage = palloc_get_page (PAL_USER);
-      // if (kpage == NULL)
-      //    return false;
-      // struct frame *frame = vm_get_frame();
-      /* Load this page. */
-      if (file_read (file, page->frame->kva, page_read_bytes ) != (int) page_read_bytes ) {
-         palloc_free_page (page);
-         return false;
-      }
-      memset (page->frame->kva + page_read_bytes, 0, page_zero_bytes);
+	file_seek(file, ofs);
+	/* Do calculate how to fill this page.
+	* We will read PAGE_READ_BYTES bytes from FILE
+	* and zero the final PAGE_ZERO_BYTES bytes. */
+	size_t page_read_bytes = read_bytes < PGSIZE ? read_bytes : PGSIZE;
+	size_t page_zero_bytes = PGSIZE - page_read_bytes;
 
-      /* Add the page to the process's address space. */
-      // struct supplemental_page_table *spt = &thread_current()->spt;
-      // if (!spt_insert_page(spt, page)) {
-      //    printf("fail\n");
-      //    palloc_free_page (page);
-      //    return false;
-      // }
-   
-      /* Advance. */
-      // read_bytes -= page_read_bytes;
-      // zero_bytes -= page_zero_bytes;
-      // page += PGSIZE;
-   // }
-   return true;
+ 	/* Kernel page */
+	void *kpage = page->frame->kva;
+
+ 	/* Load this page. */
+	if (file_read (file, kpage, page_read_bytes) != (int) page_read_bytes) {
+		palloc_free_page (page);
+		return false;
+	}
+	
+	memset (kpage + page_read_bytes, 0, page_zero_bytes);
+	return true;
+	
+
 }
-
-
-// static bool
-// lazy_load_segment (struct page *page, void *aux) {
-// /* 하나의 페이지를 로드하기 위한 함수야 근데 page fault가 날 때, */
-// /* lazy_load_segment가 실행되면서 load_segment() 일과 같은 */
-// /* 일을 실행하는 거야                                     */
-
-// 	struct load_segment_info *info = aux;
-
-// 	struct file *file = info->file;
-// 	off_t ofs = info->ofs;
-// 	uint8_t *upage = info->upage;
-// 	uint32_t read_bytes = info->read_bytes;
-// 	uint32_t zero_bytes = info->zero_bytes;
-// 	bool writable = info->writable;
-
-// 	printf("read_bytes: %d\n", read_bytes);
-
-// 	ASSERT ((read_bytes + zero_bytes) % PGSIZE == 0);
-// 	ASSERT (pg_ofs (upage) == 0);
-// 	ASSERT (ofs % PGSIZE == 0);
-
-// 	file_seek(file, ofs);
-
-// 	/* Kernel page */
-// 	void *kpage = page->frame->kva;
-
-// 	/* Load this page. */
-// 	if (file_read (file, kpage, read_bytes) != (int) read_bytes) {
-// 		palloc_free_page (kpage);
-// 		return false;
-// 	}
-	
-// 	memset (kpage + read_bytes, 0, zero_bytes);
-
-// 	return true;
-	
-
-// }
 
 /* Loads a segment starting at offset OFS in FILE at address
  * UPAGE.  In total, READ_BYTES + ZERO_BYTES bytes of virtual
@@ -973,89 +939,90 @@ lazy_load_segment (struct page *page, void *aux) {
  * Return true if successful, false if a memory allocation error
  * or disk read error occurs. */
 
-static bool
-load_segment (struct file *file, off_t ofs, uint8_t *upage,
-      uint32_t read_bytes, uint32_t zero_bytes, bool writable) {
-   ASSERT ((read_bytes + zero_bytes) % PGSIZE == 0);
-   ASSERT (pg_ofs (upage) == 0);
-   ASSERT (ofs % PGSIZE == 0);
-
-   while (read_bytes > 0 || zero_bytes > 0) {
-      /* Do calculate how to fill this page.
-       * We will read PAGE_READ_BYTES bytes from FILE
-       * and zero the final PAGE_ZERO_BYTES bytes. */
-      size_t page_read_bytes = read_bytes < PGSIZE ? read_bytes : PGSIZE;
-      size_t page_zero_bytes = PGSIZE - page_read_bytes;
-
-      /* TODO: Set up aux to pass information to the lazy_load_segment. */
-      void *aux = NULL;
-      struct info_binary *info = malloc(sizeof(struct info_binary));
-      info->file = file;
-      info->ofs = ofs;
-      info->upage = upage;
-      info->read_bytes = page_read_bytes;
-      info->zero_bytes = page_zero_bytes;
-      info->writable = writable;
-      aux = info;
-
-      if (!vm_alloc_page_with_initializer (VM_ANON, upage,
-               writable, lazy_load_segment, aux))
-      {
-         return false;
-      }
-
-      /* Advance. */
-      read_bytes -= page_read_bytes;
-      zero_bytes -= page_zero_bytes;
-      upage += PGSIZE;
-      ofs += page_read_bytes;
-   }
-   return true;
-}
 // static bool
 // load_segment (struct file *file, off_t ofs, uint8_t *upage,
-// 		uint32_t read_bytes, uint32_t zero_bytes, bool writable) {
-// 	ASSERT ((read_bytes + zero_bytes) % PGSIZE == 0);
-// 	ASSERT (pg_ofs (upage) == 0);
-// 	ASSERT (ofs % PGSIZE == 0);
+//       uint32_t read_bytes, uint32_t zero_bytes, bool writable) {
+//    ASSERT ((read_bytes + zero_bytes) % PGSIZE == 0);
+//    ASSERT (pg_ofs (upage) == 0);
+//    ASSERT (ofs % PGSIZE == 0);
 
-// 	/* load_segment_info init */	
+//    while (read_bytes > 0 || zero_bytes > 0) {
+//       /* Do calculate how to fill this page.
+//        * We will read PAGE_READ_BYTES bytes from FILE
+//        * and zero the final PAGE_ZERO_BYTES bytes. */
+//       size_t page_read_bytes = read_bytes < PGSIZE ? read_bytes : PGSIZE;
+//       size_t page_zero_bytes = PGSIZE - page_read_bytes;
 
-// 	while (read_bytes > 0 || zero_bytes > 0) {
-// 		/* Do calculate how to fill this page.
-// 		 * We will read PAGE_READ_BYTES bytes from FILE
-// 		 * and zero the final PAGE_ZERO_BYTES bytes. */
-// 		size_t page_read_bytes = read_bytes < PGSIZE ? read_bytes : PGSIZE;
-// 		size_t page_zero_bytes = PGSIZE - page_read_bytes;
+//       /* TODO: Set up aux to pass information to the lazy_load_segment. */
+//       void *aux = NULL;
+//       struct info_binary *info = malloc(sizeof(struct info_binary));
+//       info->file = file;
+//       info->ofs = ofs;
+//       info->upage = upage;
+//       info->read_bytes = page_read_bytes;
+//       info->zero_bytes = page_zero_bytes;
+//       info->writable = writable;
+//       aux = info;
 
-// 		/* page가 생성될 때마다 malloc 해줘야 함 */
-// 		struct load_segment_info *info = malloc(sizeof(struct load_segment_info));
-// 		if (info == NULL) PANIC("TODO");
-	
-// 		info->file = file; //데이터를 읽어올 파일.
-// 		info->ofs = ofs; //파일에서 데이터를 읽기 시작할 오프셋.
-// 		info->upage = upage; //가상 메모리 주소.
-// 		info->read_bytes = page_read_bytes; //읽어야 할 바이트 수.
-// 		info->zero_bytes = page_zero_bytes; //0으로 채워야 할 바이트 수.
-// 		info->writable = writable; //메모리가 쓰기 가능한지 여부.
+//       if (!vm_alloc_page_with_initializer (VM_ANON, upage,
+//                writable, lazy_load_segment, aux))
+//       {
+//          return false;
+//       }
 
-// 		/* Set up aux to pass information to the lazy_load_segment. */
-// 		if (!vm_alloc_page_with_initializer (VM_ANON, upage,
-// 					writable, lazy_load_segment, info)) {
-// 			return false;
-// 		}
-
-// 		/* Advance. */
-// 		read_bytes -= page_read_bytes;
-// 		zero_bytes -= page_zero_bytes;
-// 		upage += PGSIZE;
-// 		ofs += page_read_bytes;
-// 		// printf("load_segment에서의 readbytes: %d\n", info->read_bytes);
-// 		// printf("load_segment에서의 zerobytes: %d\n", info->zero_bytes);
-// 	}
-
-// 	return true;
+//       /* Advance. */
+//       read_bytes -= page_read_bytes;
+//       zero_bytes -= page_zero_bytes;
+//       upage += PGSIZE;
+//       ofs += page_read_bytes;
+//    }
+//    return true;
 // }
+
+static bool
+load_segment (struct file *file, off_t ofs, uint8_t *upage,
+		uint32_t read_bytes, uint32_t zero_bytes, bool writable) {
+	ASSERT ((read_bytes + zero_bytes) % PGSIZE == 0);
+	ASSERT (pg_ofs (upage) == 0);
+	ASSERT (ofs % PGSIZE == 0);
+
+	/* load_segment_info init */	
+
+	while (read_bytes > 0 || zero_bytes > 0) {
+		/* Do calculate how to fill this page.
+		 * We will read PAGE_READ_BYTES bytes from FILE
+		 * and zero the final PAGE_ZERO_BYTES bytes. */
+		size_t page_read_bytes = read_bytes < PGSIZE ? read_bytes : PGSIZE;
+		size_t page_zero_bytes = PGSIZE - page_read_bytes;
+
+		/* page가 생성될 때마다 malloc 해줘야 함 */
+		struct load_segment_info *info = malloc(sizeof(struct load_segment_info));
+		if (info == NULL) PANIC("TODO");
+	
+		info->file = file; //데이터를 읽어올 파일.
+		info->ofs = ofs; //파일에서 데이터를 읽기 시작할 오프셋.
+		info->upage = upage; //가상 메모리 주소.
+		info->read_bytes = page_read_bytes; //읽어야 할 바이트 수.
+		info->zero_bytes = page_zero_bytes; //0으로 채워야 할 바이트 수.
+		info->writable = writable; //메모리가 쓰기 가능한지 여부.
+
+		/* Set up aux to pass information to the lazy_load_segment. */
+		if (!vm_alloc_page_with_initializer (VM_ANON, upage,
+					writable, lazy_load_segment, info)) {
+			return false;
+		}
+
+		/* Advance. */
+		read_bytes -= page_read_bytes;
+		zero_bytes -= page_zero_bytes;
+		upage += PGSIZE;
+		ofs += page_read_bytes;
+		// printf("load_segment에서의 readbytes: %d\n", info->read_bytes);
+		// printf("load_segment에서의 zerobytes: %d\n", info->zero_bytes);
+	}
+
+	return true;
+}
 
 /* Create a PAGE of stack at the USER_STACK. Return true on success. */
 static bool
@@ -1063,10 +1030,10 @@ setup_stack (struct intr_frame *if_) {
    bool success = false;
    void *stack_bottom = (void *) (((uint8_t *) USER_STACK) - PGSIZE);
 
-   /* TODO: Map the stack on stack_bottom and claim the page immediately.
-    * TODO: If success, set the rsp accordingly.
-    * TODO: You should mark the page is stack. */
-   /* TODO: Your code goes here */
+   /* Map the stack on stack_bottom and claim the page immediately.
+    * If success, set the rsp accordingly.
+    * You should mark the page is stack. */
+   /* Your code goes here */
    
    vm_alloc_page_with_initializer(VM_ANON | VM_MARKER_0, stack_bottom, true, NULL, NULL);
 

@@ -19,7 +19,7 @@ Executing 'mmap-bad-fd2':
 mmap-bad-fd2: exit(1)
 Execution of 'mmap-bad-fd2' complete.
 Timer: 152 ticks
-Thread: 70 idle ticks, 63 kernel ticks, 20 user ticks
+Thread: 58 idle ticks, 73 kernel ticks, 22 user ticks
 hd0:0: 0 reads, 0 writes
 hd0:1: 80 reads, 234 writes
 hd1:0: 103 reads, 0 writes
