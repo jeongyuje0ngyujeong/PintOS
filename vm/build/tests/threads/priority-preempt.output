@@ -22,7 +22,7 @@ Executing 'priority-preempt':
 (priority-preempt) end
 Execution of 'priority-preempt' complete.
 Timer: 99 ticks
-Thread: 31 idle ticks, 70 kernel ticks, 0 user ticks
+Thread: 33 idle ticks, 67 kernel ticks, 0 user ticks
 hd0:0: 0 reads, 0 writes
 hd0:1: 9 reads, 18 writes
 hd1:1: 0 reads, 0 writes

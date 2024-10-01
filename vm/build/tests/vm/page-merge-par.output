@@ -21,10 +21,10 @@ Executing 'page-merge-par':
 (page-merge-par) sort chunk 2
 page-merge-par: exit(-1)
 Execution of 'page-merge-par' complete.
-Timer: 616 ticks
-Thread: 225 idle ticks, 90 kernel ticks, 302 user ticks
+Timer: 564 ticks
+Thread: 227 idle ticks, 87 kernel ticks, 251 user ticks
 hd0:0: 0 reads, 0 writes
-hd0:1: 180 reads, 1522 writes
+hd0:1: 182 reads, 1522 writes
 hd1:0: 218 reads, 0 writes
 hd1:1: 0 reads, 0 writes
 Console: 1146 characters output

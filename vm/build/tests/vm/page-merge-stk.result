@@ -47,6 +47,5 @@ Differences in `diff -u' format:
 - (page-merge-stk) verify
 - (page-merge-stk) success, buf_idx=1,048,576
 - (page-merge-stk) end
-+ load: child-qsort buf1: open failed
 
 (Process exit codes are excluded for matching purposes.)

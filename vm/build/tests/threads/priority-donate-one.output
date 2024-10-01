@@ -22,8 +22,8 @@ Executing 'priority-donate-one':
 (priority-donate-one) This should be the last line before finishing this test.
 (priority-donate-one) end
 Execution of 'priority-donate-one' complete.
-Timer: 105 ticks
-Thread: 33 idle ticks, 73 kernel ticks, 0 user ticks
+Timer: 109 ticks
+Thread: 31 idle ticks, 80 kernel ticks, 0 user ticks
 hd0:0: 0 reads, 0 writes
 hd0:1: 9 reads, 18 writes
 hd1:1: 0 reads, 0 writes

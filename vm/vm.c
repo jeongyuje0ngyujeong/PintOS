@@ -46,36 +46,6 @@ static struct frame *vm_evict_frame (void);
 /* Create the pending page object with initializer. If you want to create a
  * page, do not create it directly and make it through this function or
  * `vm_alloc_page`. */
-// bool
-// vm_alloc_page_with_initializer (enum vm_type type, void *upage, bool writable,
-//       vm_initializer *init, void *aux) {
-//    // printf("alloc page addr: %p\n", upage);
-//    ASSERT (VM_TYPE(type) != VM_UNINIT)
-
-//    struct supplemental_page_table *spt = &thread_current ()->spt;
-//    /* Check wheter the upage is already occupied or not. */
-//    if (spt_find_page (spt, upage) == NULL) {
-//       /* TODO: Create the page, fetch the initialier according to the VM type,
-//        * TODO: and then create "uninit" page struct by calling uninit_new. You
-//        * TODO: should modify the field after calling the uninit_new. */
-//       struct page* new_page = malloc(sizeof(struct page));
-
-//       if (VM_TYPE(type) == VM_ANON){
-//          uninit_new(new_page, upage, init, type, aux, anon_initializer);
-//       }
-//       else {
-//          uninit_new(new_page, upage, init, type, aux, file_backed_initializer);
-//       }
-      
-//       /* TODO: Insert the page into the spt. */
-//       new_page->writable = writable;
-//       if (spt_insert_page(spt, new_page)){
-//          return true;
-//       };
-//    }
-// err:
-//    return false;
-// }
 bool
 vm_alloc_page_with_initializer (enum vm_type type, void *upage, bool writable,
 		vm_initializer *init, void *aux) {
@@ -124,25 +94,6 @@ err:
 }
 
 /* Find VA from spt and return page. On error, return NULL. */
-// struct page *
-// page_lookup (struct hash *h UNUSED, const void *address) {
-//   struct page p;
-//   struct hash_elem *e;
-
-//   p.va = address;
-//   e = hash_find (h, &p.hash_elem);
-//   return e != NULL ? hash_entry (e, struct page, hash_elem) : NULL;
-// }
-
-/* Find VA from spt and return page. On error, return NULL. */
-// struct page *
-// spt_find_page (struct supplemental_page_table *spt UNUSED, void *va UNUSED) {
-//    struct page *page = NULL;
-//    /* TODO: Fill this function. */
-//    page = page_lookup(&spt->hash, va);
-
-//    return page;
-// }
 struct page *
 spt_find_page (struct supplemental_page_table *spt UNUSED, void *va UNUSED) {
 	/* 더미 page를 설정해서 va값만 일단 대충 넣어야 하기 때문에 주소값이 아닌 그 자체로 저장 */
@@ -203,24 +154,6 @@ vm_evict_frame (void) {
  * and return it. This always return valid address. That is, if the user pool
  * memory is full, this function evicts the frame to get the available memory
  * space.*/
-// static struct frame *
-// vm_get_frame (void) {
-//    struct frame *frame = NULL;
-//    /* TODO: Fill this function. */
-//    void *kpage = palloc_get_page(PAL_USER);
-//    if (kpage){
-//       frame = malloc(sizeof(struct frame));
-//       frame->kva = kpage;
-//       frame->page = NULL;
-//    }
-//    else{
-//       PANIC ("todo");
-//    }
-
-//    ASSERT (frame != NULL);
-//    ASSERT (frame->page == NULL);
-//    return frame;
-// }
 static struct frame *
 vm_get_frame (void) {
 	struct frame *frame = malloc(sizeof(struct frame));
@@ -240,7 +173,20 @@ vm_get_frame (void) {
 
 /* Growing the stack. */
 static void
-vm_stack_growth (void *addr UNUSED) {
+vm_stack_growth (void *addr) {
+	// void *stack_ptr = pg_round_down(thread_current()->stack_ptr);
+	void *new_bottom = pg_round_down(addr);
+	void *cur_bottom = thread_current()->stack_bottom;
+	// printf("stack bottom: %p\n stack ptr: %p\n", stack_bottom, stack_ptr);
+	while (new_bottom < cur_bottom) {	
+		cur_bottom -= PGSIZE;
+		// printf("cur_bottom: %p\n", cur_bottom);
+		vm_alloc_page_with_initializer(VM_ANON | VM_MARKER_0, cur_bottom, true, NULL, NULL);
+		if (!vm_claim_page(cur_bottom)) {
+			thread_exit();
+		}
+	}
+	thread_current()->stack_bottom = new_bottom;
 }
 
 /* Handle the fault on write_protected page */
@@ -251,14 +197,32 @@ vm_handle_wp (struct page *page UNUSED) {
 /* Return true on success */
 
 bool
-vm_try_handle_fault (struct intr_frame *f UNUSED, void *addr UNUSED,
-		bool user UNUSED, bool write UNUSED, bool not_present UNUSED) {
+vm_try_handle_fault (struct intr_frame *f, void *addr,
+		bool user, bool write, bool not_present) {
 
+	struct thread *curr = thread_current();
+
+	/* not_present: 
+	 * True - 존재하지 않는 page, 
+	 * False - read only page에 writing 하려는 것임  */
 	if (!not_present) {
 		return false;
 	}
 
-	struct supplemental_page_table *spt UNUSED = &thread_current ()->spt;
+	// printf("try handle fault");
+	if (user) 
+		curr->stack_ptr = f->rsp;
+
+	/* page fault난 곳의 오류가 stack에서 일어났을 경우 처리 
+		* fault가 일어난 주소값이 스택 ptr보다 page byte(8 byte)아래에서 발생했는지
+		* addr이 stack page 구간 안에 존재하는지 */
+	if (addr >= curr->stack_ptr - 8 &&					  
+		MAX_STACK_SIZE < addr && addr < USER_STACK) { 
+		vm_stack_growth(addr);
+		return true;
+	}
+
+	struct supplemental_page_table *spt UNUSED = &curr->spt;
 	struct page *page = spt_find_page(spt, addr);
 	if (page == NULL) return false;
 	// printf("page->va: %p\n", page->va);
@@ -275,16 +239,6 @@ vm_dealloc_page (struct page *page) {
 }
 
 /* Claim the page that allocate on VA. */
-// bool
-// vm_claim_page (void *va UNUSED) {
-//    struct page *page = NULL;
-//    /* TODO: Fill this function */
-//    // page = malloc(sizeof(struct page));
-//    // page->va = va;
-//    page = spt_find_page(&thread_current()->spt, va);
-
-//    return vm_do_claim_page (page);
-// }
 bool
 vm_claim_page (void *va UNUSED) {
 	/* Fill this function */
@@ -294,22 +248,6 @@ vm_claim_page (void *va UNUSED) {
 }
 
 /* Claim the PAGE and set up the mmu. */
-// static bool
-// vm_do_claim_page (struct page *page) {
-//    struct frame *frame = vm_get_frame ();
-
-//    /* Set links */
-//    frame->page = page;
-//    page->frame = frame;
-
-//    /* TODO: Insert page table entry to map page's VA to frame's PA. */
-//    pml4_set_page(thread_current()->pml4, page->va,frame->kva,page->writable);
-
-//    // struct supplemental_page_table *spt = &thread_current()->spt;
-//    // spt_insert_page(spt,page);
-
-//    return swap_in (page, frame->kva);
-// }
 static bool
 vm_do_claim_page (struct page *page) {
 	//printf("어디에서 실패임?\n");
@@ -327,21 +265,6 @@ vm_do_claim_page (struct page *page) {
 	//if (page->operations->swap_in != NULL) printf("swap_in: %p\n", page->operations->swap_in );
 	return swap_in (page, frame->kva);
 }
-
-// unsigned
-// page_hash (const struct hash_elem *p_, void *aux UNUSED) {
-//    const struct page *p = hash_entry (p_, struct page, hash_elem);
-//    return hash_bytes (&p->va, sizeof p->va);
-// }
-
-// bool
-// page_less (const struct hash_elem *a_,
-//            const struct hash_elem *b_, void *aux UNUSED) {
-//    const struct page *a = hash_entry (a_, struct page, hash_elem);
-//    const struct page *b = hash_entry (b_, struct page, hash_elem);
-
-//    return a->va < b->va;
-// }
 
 /* Initialize new supplemental page table */
 void
@@ -393,11 +316,10 @@ supplemental_page_table_kill (struct supplemental_page_table *spt UNUSED) {
 	/* Destroy all the supplemental_page_table hold by thread and
 	 * writeback all the modified contents to the storage. */
 
-	// // struct hash *hash = &spt->hash;
-	// // struct hash_iterator i;
-
 	hash_clear(&spt->hash, page_destructor);
 
+	// // struct hash *hash = &spt->hash;
+	// // struct hash_iterator i;
 	// // struct page *page = hash_entry(hash_cur(&i), struct page, hash_elem);
 	// // hash_destroy(hash, page_destructor);
 	return true;

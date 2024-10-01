@@ -1,12 +1,12 @@
 FAIL
-Kernel panic in run: PANIC at ../../vm/vm.c:230 in vm_get_frame(): TODO
-Call stack: 0x80042184f8 0x8004221515 0x8004221711 0x800422165e 0x800421d336 0x8004209315 0x8004209733 0x400cac 0x400cf5
+Kernel panic in run: PANIC at ../../vm/vm.c:163 in vm_get_frame(): TODO
+Call stack: 0x80042184f8 0x8004221556 0x8004221860 0x80042217ad 0x800421d377 0x8004209315 0x8004209733 0x400cac 0x400cf5
 Translation of call stack:
 0x00000080042184f8: debug_panic (lib/kernel/debug.c:32)
-0x0000008004221515: vm_get_frame (vm/vm.c:233)
-0x0000008004221711: vm_do_claim_page (vm/vm.c:316)
-0x000000800422165e: vm_try_handle_fault (vm/vm.c:267)
-0x000000800421d336: page_fault (userprog/exception.c:147)
+0x0000008004221556: vm_get_frame (vm/vm.c:166)
+0x0000008004221860: vm_do_claim_page (vm/vm.c:254)
+0x00000080042217ad: vm_try_handle_fault (vm/vm.c:231)
+0x000000800421d377: page_fault (userprog/exception.c:147)
 0x0000008004209315: intr_handler (threads/interrupt.c:352)
 0x0000008004209733: intr_entry (threads/intr-stubs.o:?)
 0x0000000000400cac: (unknown)
