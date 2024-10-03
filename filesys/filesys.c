@@ -8,10 +8,15 @@
 #include "filesys/directory.h"
 #include "devices/disk.h"
 
-/* The disk that contains the file system. */
-struct disk *filesys_disk;
+#include "threads/synch.h"
 
+/* The disk that contains the file system. */
+struct disk *filesys_disk;    
 static void do_format (void);
+
+/* file create, open, read, write, delete 시 lock으로 동시성 해결
+ * inode 구조체와 같이 공통적으로 넣어줄만한 게 없음.. 추적 불가  */
+static struct lock file_lock;
 
 /* Initializes the file system module.
  * If FORMAT is true, reformats the file system. */
@@ -22,6 +27,7 @@ filesys_init (bool format) {
 		PANIC ("hd0:1 (hdb) not present, file system initialization failed");
 
 	inode_init ();
+	lock_init(&file_lock);
 
 #ifdef EFILESYS
 	fat_init ();
@@ -59,6 +65,8 @@ filesys_done (void) {
  * or if internal memory allocation fails. */
 bool
 filesys_create (const char *name, off_t initial_size) {
+	lock_acquire(&file_lock);
+
 	disk_sector_t inode_sector = 0;
 	struct dir *dir = dir_open_root ();
 	bool success = (dir != NULL
@@ -69,6 +77,7 @@ filesys_create (const char *name, off_t initial_size) {
 		free_map_release (inode_sector, 1);
 	dir_close (dir);
 
+	lock_release(&file_lock);
 	return success;
 }
 
@@ -79,13 +88,14 @@ filesys_create (const char *name, off_t initial_size) {
  * or if an internal memory allocation fails. */
 struct file *
 filesys_open (const char *name) {
+	lock_acquire(&file_lock);
 	struct dir *dir = dir_open_root ();
 	struct inode *inode = NULL;
 
 	if (dir != NULL)
 		dir_lookup (dir, name, &inode);
 	dir_close (dir);
-
+	lock_release(&file_lock);
 	return file_open (inode);
 }
 
@@ -95,10 +105,11 @@ filesys_open (const char *name) {
  * or if an internal memory allocation fails. */
 bool
 filesys_remove (const char *name) {
+	lock_acquire(&file_lock);
 	struct dir *dir = dir_open_root ();
 	bool success = dir != NULL && dir_remove (dir, name);
 	dir_close (dir);
-
+	lock_release(&file_lock);
 	return success;
 }
 

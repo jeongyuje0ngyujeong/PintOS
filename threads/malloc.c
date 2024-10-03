@@ -147,6 +147,7 @@ malloc (size_t size) {
    Returns a null pointer if memory is not available. */
 void *
 calloc (size_t a, size_t b) {
+	// printf("calloc error?\n");
 	void *p;
 	size_t size;
 

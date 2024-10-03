@@ -284,6 +284,7 @@ process_wait (tid_t child_tid UNUSED) {
 void
  process_exit (void) {
 	struct thread *curr = thread_current ();
+	// printf("process_exit\n");
 	if (curr->is_user) {
 		printf("%s: exit(%d)\n", curr->name, curr->exit_status);
 

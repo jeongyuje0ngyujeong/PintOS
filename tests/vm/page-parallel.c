@@ -13,8 +13,11 @@ test_main (void)
   int i;
 
   for (i = 0; i < CHILD_CNT; i++) {
+    // printf("i: %d\n", i);
     children[i] = fork ("child-linear");
+    // printf("child tid: %d\n", children[i]);
     if (children[i] == 0) {
+      // printf("child tid2: %d\n", children[i]);
       if (exec ("child-linear") == -1)
         fail ("failed to exec child-linear");
     }

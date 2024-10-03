@@ -132,10 +132,10 @@ page_fault (struct intr_frame *f) {
 
 	fault_addr = (void *) rcr2();
 
+	// printf("faulte addr: %p\n",fault_addr);
 	/* Turn interrupts back on (they were only off so that we could
 	   be assured of reading CR2 before it changed). */
 	intr_enable ();
-
 
 	/* Determine cause. */
 	not_present = (f->error_code & PF_P) == 0;
@@ -144,6 +144,7 @@ page_fault (struct intr_frame *f) {
 
 #ifdef VM
 	/* For project 3 and later. */
+	// printf("fault addr: %p\n", fault_addr);
 	if (vm_try_handle_fault (f, fault_addr, user, write, not_present))
 		return;
 #endif
@@ -167,4 +168,3 @@ page_fault (struct intr_frame *f) {
 			user ? "user" : "kernel");
 	kill (f);
 }
-

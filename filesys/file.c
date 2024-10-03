@@ -3,6 +3,10 @@
 #include "filesys/inode.h"
 #include "threads/malloc.h"
 
+#include "threads/synch.h"
+
+// static struct lock file_lock;
+
 /* An open file. */
 struct file {
 	struct inode *inode;        /* File's inode. */
@@ -15,15 +19,19 @@ struct file {
  * allocation fails or if INODE is null. */
 struct file *
 file_open (struct inode *inode) {
+	// lock_acquire(file_lock);
+	// printf("open error?\n");
 	struct file *file = calloc (1, sizeof *file);
 	if (inode != NULL && file != NULL) {
 		file->inode = inode;
 		file->pos = 0;
 		file->deny_write = false;
+		// lock_release(file_lock);
 		return file;
 	} else {
 		inode_close (inode);
 		free (file);
+		// lock_release(file_lock);
 		return NULL;
 	}
 }
@@ -32,6 +40,7 @@ file_open (struct inode *inode) {
  * Returns a null pointer if unsuccessful. */
 struct file *
 file_reopen (struct file *file) {
+	// printf("reopen file addr: %p\n", file);
 	return file_open (inode_reopen (file->inode));
 }
 

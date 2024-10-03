@@ -61,8 +61,6 @@ exit(int status) {
 
 bool
 create(char *cur_file, size_t size) {
-	// /* 에러처리용 수정 */
-	// if (cur_file == NULL || !is_user_vaddr(cur_file))
 	if (cur_file == NULL || !is_user_vaddr(cur_file) || !pml4_get_page(thread_current()->pml4, cur_file))
 	{
 		thread_current()->exit_status = -1;
@@ -89,6 +87,12 @@ write(int fd, void *buffer, size_t size) {
 
 int
 read(int fd, void *buffer, size_t size) {
+	if (pml4_get_page(thread_current()->pml4, buffer) 
+		&& !spt_find_page(&thread_current()->spt, buffer)->writable) {
+			thread_current()->exit_status = -1;
+			thread_exit();
+	}
+
 	if (fd == 0 && buffer != NULL) return input_getc();
 	else if (2 < fd && fd < 30 && buffer != NULL) 
 	{
@@ -138,6 +142,7 @@ open(char *file_name) {
 	
 	if (i < FD_MAX) {
 		t->fd_table[i] = cur_file;
+		// printf("open fd: %d\n", i);
 		return i;
 	}
 	
@@ -158,8 +163,6 @@ filesize (int fd) {
 void
 exec(char *cmd_line, struct intr_frame *f){
 	/* address가 유효한 address인지 확인하는 코드 */
-	// /* 에러처리용 수정 */
-	// if (cmd_line == NULL || !is_user_vaddr(cmd_line))
 	if (cmd_line == NULL || !is_user_vaddr(cmd_line) || !pml4_get_page(thread_current()->pml4, cmd_line))
 	{	
 		thread_current()->exit_status = -1;
@@ -219,6 +222,11 @@ close(int fd) {
 
 }
 
+void *
+mmap(void *addr, size_t length, int writable, struct file *file, off_t offset) {
+	// printf("syscall mmap\n");
+	return do_mmap(addr, length, writable, file, offset);
+}
 
 /* The main system call interface */
 void
@@ -322,6 +330,22 @@ syscall_handler (struct intr_frame *f UNUSED) {
 		int fd = f->R.rdi;
 		close(fd);
 		break;
+	}
+	case SYS_MMAP:
+	{
+		void *addr = f->R.rdi;
+		size_t length = f->R.rsi;
+		int writable = f->R.rdx;
+		int fd = f->R.r10;
+		off_t offset = f->R.r8;
+		struct file *file = thread_current()->fd_table[fd];
+		
+		f->R.rax = mmap(addr, length, writable, file, offset);
+		break;
+	}
+	case SYS_MUNMAP:
+	{
+
 	}
 
 	default:
