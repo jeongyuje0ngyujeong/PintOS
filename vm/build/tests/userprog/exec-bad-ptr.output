@@ -16,8 +16,8 @@ Executing 'exec-bad-ptr':
 (exec-bad-ptr) begin
 exec-bad-ptr: exit(-1)
 Execution of 'exec-bad-ptr' complete.
-Timer: 167 ticks
-Thread: 48 idle ticks, 98 kernel ticks, 23 user ticks
+Timer: 157 ticks
+Thread: 56 idle ticks, 90 kernel ticks, 16 user ticks
 hd0:0: 0 reads, 0 writes
 hd0:1: 80 reads, 232 writes
 hd1:0: 102 reads, 0 writes

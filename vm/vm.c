@@ -49,7 +49,6 @@ static struct frame *vm_evict_frame (void);
 bool
 vm_alloc_page_with_initializer (enum vm_type type, void *upage, bool writable,
 		vm_initializer *init, void *aux) {
-	
 	ASSERT (VM_TYPE(type) != VM_UNINIT)
 
 	struct supplemental_page_table *spt = &thread_current ()->spt;
@@ -85,6 +84,7 @@ vm_alloc_page_with_initializer (enum vm_type type, void *upage, bool writable,
 		
 		uninit_new(page, pg_round_down(upage), init, type, aux, initializer);
 		page->writable = writable;
+		// printf("insert to (%p)\n", thread_current());
 		spt_insert_page(spt, page);
 		// printf("alloc addr: %p\n", pg_round_down(upage));
 		return true;
@@ -177,9 +177,10 @@ vm_stack_growth (void *addr) {
 	// void *stack_ptr = pg_round_down(thread_current()->stack_ptr);
 	void *new_bottom = pg_round_down(addr);
 	void *cur_bottom = thread_current()->stack_bottom;
-	// printf("stack bottom: %p\n stack ptr: %p\n", stack_bottom, stack_ptr);
+	// printf("new_bottom: %p\ncur_bottom: %p\n\n", new_bottom, cur_bottom);
 	while (new_bottom < cur_bottom) {	
 		cur_bottom -= PGSIZE;
+		// printf("cur_bottom addr: %p\n", cur_bottom);
 		// printf("cur_bottom: %p\n", cur_bottom);
 		vm_alloc_page_with_initializer(VM_ANON | VM_MARKER_0, cur_bottom, true, NULL, NULL);
 		if (!vm_claim_page(cur_bottom)) {
@@ -218,6 +219,7 @@ vm_try_handle_fault (struct intr_frame *f, void *addr,
 		* addr이 stack page 구간 안에 존재하는지 */
 	if (addr >= curr->stack_ptr - 8 &&					  
 		MAX_STACK_SIZE < addr && addr < USER_STACK) { 
+		// printf("PAGE FAULT\naddr: %p\nrsp stack ptr: %p\n\n", addr, curr->stack_ptr);
 		vm_stack_growth(addr);
 		return true;
 	}
@@ -285,6 +287,7 @@ supplemental_page_table_copy (struct supplemental_page_table *dst,
 	while (hash_next(&i)) {
 		struct page *src_page = hash_entry(hash_cur(&i), struct page, hash_elem);
 		enum vm_type type = src_page->operations->type;
+		// printf("src_page: %p\n thread_name: %s\n", src_page->va, thread_current()->name);
 		if (VM_TYPE(type) != VM_UNINIT) {
 			// bool (*initializer)(struct page *, enum vm_type, void *kva) = NULL;
 			// initializer = VM_TYPE(type) == VM_TYPE(VM_ANON) ? &anon_initializer : &file_backed_initializer;
@@ -303,9 +306,10 @@ supplemental_page_table_copy (struct supplemental_page_table *dst,
 			memcpy(info, src_page->uninit.aux, sizeof(struct load_segment_info));
 			if(!vm_alloc_page_with_initializer(src_page->uninit.type, src_page->va, src_page->writable, src_page->uninit.init, info))
 				return false;
-			
+			// vm_claim_page(src_page->va);
 		}
 	}
+	// printf("WHILE END.....\n");
 	return true;
 
 }

@@ -1,45 +1,51 @@
 FAIL
-Kernel panic in run: PANIC at ../../threads/thread.c:293 in thread_current(): assertion `is_thread (t)' failed.
-Call stack: 0x80042184f8 0x80042070e5 0x800421d397 0x8004209315 0x8004209733 0x800421b827 0x800421b90e 0x80042159fb 0x800421c1eb 0x80042071ab 0x800421d3ad 0x8004209315 0x8004209733 0x800421b827 0x800421b90e 0x80042159fb 0x800421c1eb 0x80042071ab 0x800421d3ad 0x8004209315 0x8004209733 0x800421b827 0x800421b90e 0x80042159fb 0x800421c1eb 0x80042071ab 0x800421d3ad 0x8004209315 0x8004209733 0x8004213b69 0x80042201dd 0x800421f82b 0x800421e348 0x800421d6a0 0x800421ddec 0x800421d4d2 0x400266 0x4007f7 0x400107 0x401504 0x40154d
-Translation of call stack:
-0x00000080042184f8: debug_panic (lib/kernel/debug.c:32)
-0x00000080042070e5: thread_current (threads/thread.c:294)
-0x000000800421d397: page_fault (userprog/exception.c:152)
-0x0000008004209315: intr_handler (threads/interrupt.c:352)
-0x0000008004209733: intr_entry (threads/intr-stubs.o:?)
-0x000000800421b827: acquire_console (lib/kernel/console.c:92)
-0x000000800421b90e: vprintf (lib/kernel/console.c:122)
-0x00000080042159fb: printf (lib/stdio.c:80)
-0x000000800421c1eb: process_exit (userprog/process.c:290)
-0x00000080042071ab: thread_exit (threads/thread.c:317)
-0x000000800421d3ad: page_fault (userprog/exception.c:158)
-0x0000008004209315: intr_handler (threads/interrupt.c:352)
-0x0000008004209733: intr_entry (threads/intr-stubs.o:?)
-0x000000800421b827: acquire_console (lib/kernel/console.c:92)
-0x000000800421b90e: vprintf (lib/kernel/console.c:122)
-0x00000080042159fb: printf (lib/stdio.c:80)
-0x000000800421c1eb: process_exit (userprog/process.c:290)
-0x00000080042071ab: thread_exit (threads/thread.c:317)
-0x000000800421d3ad: page_fault (userprog/exception.c:158)
-0x0000008004209315: intr_handler (threads/interrupt.c:352)
-0x0000008004209733: intr_entry (threads/intr-stubs.o:?)
-0x000000800421b827: acquire_console (lib/kernel/console.c:92)
-0x000000800421b90e: vprintf (lib/kernel/console.c:122)
-0x00000080042159fb: printf (lib/stdio.c:80)
-0x000000800421c1eb: process_exit (userprog/process.c:290)
-0x00000080042071ab: thread_exit (threads/thread.c:317)
-0x000000800421d3ad: page_fault (userprog/exception.c:158)
-0x0000008004209315: intr_handler (threads/interrupt.c:352)
-0x0000008004209733: intr_entry (threads/intr-stubs.o:?)
-0x0000008004213b69: disk_read (devices/disk.c:219)
-0x00000080042201dd: inode_open (filesys/inode.c:129)
-0x000000800421f82b: dir_open_root (filesys/directory.c:49)
-0x000000800421e348: filesys_create (filesys/filesys.c:63)
-0x000000800421d6a0: create (userprog/syscall.c:73)
-0x000000800421ddec: syscall_handler (userprog/syscall.c:264)
-0x000000800421d4d2: no_sti (userprog/syscall-entry.o:?)
-0x0000000000400266: (unknown)
-0x00000000004007f7: (unknown)
-0x0000000000400107: (unknown)
-0x0000000000401504: (unknown)
-0x000000000040154d: (unknown)
+Test output failed to match any acceptable form.
+
+Acceptable output:
+  (page-merge-mm) begin
+  (page-merge-mm) init
+  (page-merge-mm) sort chunk 0
+  (page-merge-mm) sort chunk 1
+  (page-merge-mm) sort chunk 2
+  (page-merge-mm) sort chunk 3
+  (page-merge-mm) sort chunk 4
+  (page-merge-mm) sort chunk 5
+  (page-merge-mm) sort chunk 6
+  (page-merge-mm) sort chunk 7
+  (page-merge-mm) wait for child 0
+  (page-merge-mm) wait for child 1
+  (page-merge-mm) wait for child 2
+  (page-merge-mm) wait for child 3
+  (page-merge-mm) wait for child 4
+  (page-merge-mm) wait for child 5
+  (page-merge-mm) wait for child 6
+  (page-merge-mm) wait for child 7
+  (page-merge-mm) merge
+  (page-merge-mm) verify
+  (page-merge-mm) success, buf_idx=1,048,576
+  (page-merge-mm) end
+Differences in `diff -u' format:
+  (page-merge-mm) begin
+  (page-merge-mm) init
+  (page-merge-mm) sort chunk 0
+  (page-merge-mm) sort chunk 1
+  (page-merge-mm) sort chunk 2
+- (page-merge-mm) sort chunk 3
+- (page-merge-mm) sort chunk 4
+- (page-merge-mm) sort chunk 5
+- (page-merge-mm) sort chunk 6
+- (page-merge-mm) sort chunk 7
+- (page-merge-mm) wait for child 0
+- (page-merge-mm) wait for child 1
+- (page-merge-mm) wait for child 2
+- (page-merge-mm) wait for child 3
+- (page-merge-mm) wait for child 4
+- (page-merge-mm) wait for child 5
+- (page-merge-mm) wait for child 6
+- (page-merge-mm) wait for child 7
+- (page-merge-mm) merge
+- (page-merge-mm) verify
+- (page-merge-mm) success, buf_idx=1,048,576
+- (page-merge-mm) end
+
+(Process exit codes are excluded for matching purposes.)

@@ -1,17 +1,16 @@
 FAIL
-Test output failed to match any acceptable form.
-
-Acceptable output:
-  (mmap-unmap) begin
-  (mmap-unmap) open "sample.txt"
-  (mmap-unmap) mmap "sample.txt"
-  (mmap-unmap) memory is readable 540884285
-  (mmap-unmap) memory is readable 540888381
-  mmap-unmap: exit(-1)
-Differences in `diff -u' format:
-  (mmap-unmap) begin
-  (mmap-unmap) open "sample.txt"
-  (mmap-unmap) mmap "sample.txt"
-- (mmap-unmap) memory is readable 540884285
-- (mmap-unmap) memory is readable 540888381
-  mmap-unmap: exit(-1)
+Kernel panic in run: PANIC at ../../threads/palloc.c:305 in palloc_free_multiple(): assertion `pg_ofs (pages) == 0' failed.
+Call stack: 0x80042184f8 0x800420bc18 0x800420bdbb 0x800422217a 0x8004221eff 0x8004221b7f 0x8004221a42 0x800421d377 0x8004209315 0x8004209733 0x400ce3 0x400d2c
+Translation of call stack:
+0x00000080042184f8: debug_panic (lib/kernel/debug.c:32)
+0x000000800420bc18: palloc_free_multiple (threads/palloc.c:306)
+0x000000800420bdbb: palloc_free_page (threads/palloc.c:329)
+0x000000800422217a: file_lazy_load_segment (vm/file.c:73)
+0x0000008004221eff: uninit_initialize (vm/uninit.c:56 (discriminator 4))
+0x0000008004221b7f: vm_do_claim_page (vm/vm.c:269)
+0x0000008004221a42: vm_try_handle_fault (vm/vm.c:233)
+0x000000800421d377: page_fault (userprog/exception.c:148)
+0x0000008004209315: intr_handler (threads/interrupt.c:352)
+0x0000008004209733: intr_entry (threads/intr-stubs.o:?)
+0x0000000000400ce3: (unknown)
+0x0000000000400d2c: (unknown)

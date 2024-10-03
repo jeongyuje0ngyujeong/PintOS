@@ -4,7 +4,7 @@ Kernel command line: -q -f put mmap-over-stk put sample.txt run mmap-over-stk
 Pintos booting with: 
 	base_mem: 0x0 ~ 0x9fc00 (Usable: 639 kB)
 	ext_mem: 0x100000 ~ 0x13e0000 (Usable: 19,328 kB)
-Calibrating timer...  14,617,600 loops/s.
+Calibrating timer...  14,720,000 loops/s.
 hd0:0: detected 329 sector (164 kB) disk, model "QEMU HARDDISK", serial "QM00001"
 hd0:1: detected 20,160 sector (9 MB) disk, model "QEMU HARDDISK", serial "QM00002"
 hd1:0: detected 106 sector (53 kB) disk, model "QEMU HARDDISK", serial "QM00003"
@@ -17,16 +17,16 @@ Executing 'mmap-over-stk':
 (mmap-over-stk) begin
 (mmap-over-stk) open "sample.txt"
 (mmap-over-stk) try to mmap over stack segment
-(mmap-over-stk) try to mmap over stack segment: FAILED
-mmap-over-stk: exit(1)
+(mmap-over-stk) end
+mmap-over-stk: exit(0)
 Execution of 'mmap-over-stk' complete.
-Timer: 170 ticks
-Thread: 67 idle ticks, 83 kernel ticks, 21 user ticks
+Timer: 169 ticks
+Thread: 53 idle ticks, 92 kernel ticks, 25 user ticks
 hd0:0: 0 reads, 0 writes
 hd0:1: 111 reads, 250 writes
 hd1:0: 106 reads, 0 writes
 hd1:1: 0 reads, 0 writes
-Console: 1157 characters output
+Console: 1122 characters output
 Keyboard: 0 keys pressed
 Exception: 0 page faults
 Powering off...

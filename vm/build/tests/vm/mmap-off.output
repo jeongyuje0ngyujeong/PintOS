@@ -4,7 +4,7 @@ Kernel command line: -q -f put mmap-off put large.txt run mmap-off
 Pintos booting with: 
 	base_mem: 0x0 ~ 0x9fc00 (Usable: 639 kB)
 	ext_mem: 0x100000 ~ 0x13e0000 (Usable: 19,328 kB)
-Calibrating timer...  15,206,400 loops/s.
+Calibrating timer...  14,310,400 loops/s.
 hd0:0: detected 329 sector (164 kB) disk, model "QEMU HARDDISK", serial "QM00001"
 hd0:1: detected 20,160 sector (9 MB) disk, model "QEMU HARDDISK", serial "QM00002"
 hd1:0: detected 7,933 sector (3 MB) disk, model "QEMU HARDDISK", serial "QM00003"
@@ -17,16 +17,22 @@ Executing 'mmap-off':
 (mmap-off) begin
 (mmap-off) open "large.txt"
 (mmap-off) try to mmap with offset 0x1000
-(mmap-off) try to mmap with offset 0x1000: FAILED
-mmap-off: exit(1)
-Execution of 'mmap-off' complete.
-Timer: 2642 ticks
-Thread: 2273 idle ticks, 338 kernel ticks, 32 user ticks
+(mmap-off) validate mmap.
+Kernel PANIC at ../../threads/palloc.c:305 in palloc_free_multiple(): assertion `pg_ofs (pages) == 0' failed.
+Call stack: 0x80042184f8 0x800420bc18 0x800420bdbb 0x800422217a 0x8004221eff 0x8004221b7f 0x8004221a42 0x800421d377 0x8004209315 0x8004209733 0x4001f8 0x400fa8 0x400ff1 0Interrupt 0x0d (#GP General Protection Exception) at rip=8004215532
+ cr2=0000000010000000 error=               0
+rax 000080042413a000 rbx 0000000010000000 rcx 00000080040b8000 rdx 00000000000003d4
+rsp 0000008004241ca0 rbp 0000008004241cb0 rsi 0000000000008a0f rdi 0000000000000000
+rip 0000008004215532 r8 0000008004241bb8  r9 000000800421ba4a r10 0000000000000000
+r11 0000000000000202 r12 0000008004a29000 r13 0000000000000001 r14 0000800424001000
+r15 0000800420001000 rflags 00000006
+es: 0010 ds: 0010 cs: 0008 ss: 0010
+Kernel PANIC recursion at ../../userprog/exception.c:99 in kill().
+Timer: 2557 ticks
+Thread: 2306 idle ticks, 217 kernel ticks, 34 user ticks
 hd0:0: 0 reads, 0 writes
 hd0:1: 112 reads, 15904 writes
 hd1:0: 7933 reads, 0 writes
 hd1:1: 0 reads, 0 writes
-Console: 1112 characters output
-Keyboard: 0 keys pressed
-Exception: 0 page faults
-Powering off...
+Console: 1904 characters output
+Key

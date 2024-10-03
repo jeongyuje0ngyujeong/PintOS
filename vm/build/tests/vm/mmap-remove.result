@@ -1,21 +1,24 @@
 FAIL
-Test output failed to match any acceptable form.
+Kernel panic in run: PANIC at ../../devices/disk.c:411 in select_sector(): assertion `sec_no < d->capacity' failed.
+Call stack: 0x80042184f8 0x80042145d1 0x8004213b81 0x80042206ad 0x800421f639 0x800422215d 0x8004221eff 0x8004221b7f 0x8004221a42 0x800421d377 0x8004209315 0x8004209733 0x4002f9 0x400e51 0x400e9a
+Translation of call stack:
+0x00000080042184f8: debug_panic (lib/kernel/debug.c:32)
+0x00000080042145d1: select_sector (devices/disk.c:412)
+0x0000008004213b81: disk_read (devices/disk.c:220)
+0x00000080042206ad: inode_read_at (filesys/inode.c:229)
+0x000000800421f639: file_read (filesys/file.c:83)
+0x000000800422215d: file_lazy_load_segment (vm/file.c:71)
+0x0000008004221eff: uninit_initialize (vm/uninit.c:56 (discriminator 4))
+0x0000008004221b7f: vm_do_claim_page (vm/vm.c:269)
+0x0000008004221a42: vm_try_handle_fault (vm/vm.c:233)
+0x000000800421d377: page_fault (userprog/exception.c:148)
+0x0000008004209315: intr_handler (threads/interrupt.c:352)
+0x0000008004209733: intr_entry (threads/intr-stubs.o:?)
+0x00000000004002f9: (unknown)
+0x0000000000400e51: (unknown)
+0x0000000000400e9a: (unknown)
 
-Acceptable output:
-  (mmap-remove) begin
-  (mmap-remove) open "sample.txt"
-  (mmap-remove) mmap "sample.txt"
-  (mmap-remove) remove "sample.txt"
-  (mmap-remove) try to open "sample.txt"
-  (mmap-remove) create "another"
-  (mmap-remove) end
-Differences in `diff -u' format:
-  (mmap-remove) begin
-  (mmap-remove) open "sample.txt"
-  (mmap-remove) mmap "sample.txt"
-  (mmap-remove) remove "sample.txt"
-  (mmap-remove) try to open "sample.txt"
-  (mmap-remove) create "another"
-- (mmap-remove) end
-
-(Process exit codes are excluded for matching purposes.)
+This assertion commonly fails when accessing a file via an inode that
+has been closed and freed.  Freeing an inode clears all its sector
+indexes to 0xcccccccc, which is not a valid sector number for disks
+smaller than about 1.6 TB.

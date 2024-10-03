@@ -4,7 +4,7 @@ Kernel command line: -q -f put mmap-remove put sample.txt run mmap-remove
 Pintos booting with: 
 	base_mem: 0x0 ~ 0x9fc00 (Usable: 639 kB)
 	ext_mem: 0x100000 ~ 0x13e0000 (Usable: 19,328 kB)
-Calibrating timer...  14,617,600 loops/s.
+Calibrating timer...  13,696,000 loops/s.
 hd0:0: detected 329 sector (164 kB) disk, model "QEMU HARDDISK", serial "QM00001"
 hd0:1: detected 20,160 sector (9 MB) disk, model "QEMU HARDDISK", serial "QM00002"
 hd1:0: detected 110 sector (55 kB) disk, model "QEMU HARDDISK", serial "QM00003"
@@ -20,15 +20,21 @@ Executing 'mmap-remove':
 (mmap-remove) remove "sample.txt"
 (mmap-remove) try to open "sample.txt"
 (mmap-remove) create "another"
-mmap-remove: exit(-1)
-Execution of 'mmap-remove' complete.
-Timer: 207 ticks
-Thread: 66 idle ticks, 100 kernel ticks, 42 user ticks
+Kernel PANIC at ../../devices/disk.c:411 in select_sector(): assertion `sec_no < d->capacity' failed.
+Call stack: 0x80042184f8 0x80042145d1 0x8004213b81 0x80042206ad 0x800421f639 0x800422215d 0x8004221eff 0x8004221b7f 0x8004221a42 0x800421d377 0x8004209315 0x8004209733 0x4002f9 0x400e51 0x400e9a 0Interrupt 0x0d (#GP General Protection Exception) at rip=8004215532
+ cr2=0000000010000000 error=               0
+rax 000080042413a000 rbx 0000000010000000 rcx 00000080040b8000 rdx 00000000000003d4
+rsp 0000008004241be0 rbp 0000008004241bf0 rsi 000000000000a40f rdi 0000000000000000
+rip 0000008004215532 r8 0000008004241af8  r9 000000800421ba4a r10 0000000000000000
+r11 0000000000000202 r12 0000008004a29000 r13 0000000000000000 r14 00008004241f1000
+r15 0000800420abcf00 rflags 00000006
+es: 0010 ds: 0010 cs: 0008 ss: 0010
+Kernel PANIC recursion at ../../userprog/exception.c:99 in kill().
+Timer: 197 ticks
+Thread: 96 idle ticks, 70 kernel ticks, 31 user ticks
 hd0:0: 0 reads, 0 writes
-hd0:1: 168 reads, 361 writes
+hd0:1: 165 reads, 351 writes
 hd1:0: 110 reads, 0 writes
 hd1:1: 0 reads, 0 writes
-Console: 1177 characters output
-Keyboard: 0 keys pressed
-Exception: 0 page faults
-Powering off...
+Console: 2003 characters output
+Key

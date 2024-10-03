@@ -4,7 +4,7 @@ Kernel command line: -q -f put mmap-unmap put sample.txt run mmap-unmap
 Pintos booting with: 
 	base_mem: 0x0 ~ 0x9fc00 (Usable: 639 kB)
 	ext_mem: 0x100000 ~ 0x13e0000 (Usable: 19,328 kB)
-Calibrating timer...  15,129,600 loops/s.
+Calibrating timer...  12,992,000 loops/s.
 hd0:0: detected 329 sector (164 kB) disk, model "QEMU HARDDISK", serial "QM00001"
 hd0:1: detected 20,160 sector (9 MB) disk, model "QEMU HARDDISK", serial "QM00002"
 hd1:0: detected 109 sector (54 kB) disk, model "QEMU HARDDISK", serial "QM00003"
@@ -17,15 +17,23 @@ Executing 'mmap-unmap':
 (mmap-unmap) begin
 (mmap-unmap) open "sample.txt"
 (mmap-unmap) mmap "sample.txt"
-mmap-unmap: exit(-1)
-Execution of 'mmap-unmap' complete.
-Timer: 176 ticks
-Thread: 58 idle ticks, 95 kernel ticks, 24 user ticks
+(mmap-unmap) memory is readable 540884285
+(mmap-unmap) memory is readable 540888381
+Kernel PANIC at ../../threads/palloc.c:305 in palloc_free_multiple(): assertion `pg_ofs (pages) == 0' failed.
+Call stack: 0x80042184f8 0x800420bc18 0x800420bdbb 0x800422217a 0x8004221eff 0x8004221b7f 0x8004221a42 0x800421d377 0x8004209315 0x8004209733 0x400ce3 0x400d2c 0Interrupt 0x0d (#GP General Protection Exception) at rip=8004215532
+ cr2=0000000010001000 error=               0
+rax 000080042413a000 rbx 0000000010001000 rcx 00000080040b8000 rdx 00000000000003d4
+rsp 0000008004241ca0 rbp 0000008004241cb0 rsi 000000000000810f rdi 0000000000000000
+rip 0000008004215532 r8 0000008004241bb8  r9 000000800421ba4a r10 0000000000000000
+r11 0000000000000216 r12 0000008004a29000 r13 0000000000000000 r14 00008004241f1000
+r15 0000800420abcf00 rflags 00000006
+es: 0010 ds: 0010 cs: 0008 ss: 0010
+Kernel PANIC recursion at ../../userprog/exception.c:99 in kill().
+Timer: 168 ticks
+Thread: 80 idle ticks, 63 kernel ticks, 25 user ticks
 hd0:0: 0 reads, 0 writes
-hd0:1: 112 reads, 256 writes
+hd0:1: 114 reads, 256 writes
 hd1:0: 109 reads, 0 writes
 hd1:1: 0 reads, 0 writes
-Console: 1063 characters output
-Keyboard: 0 keys pressed
-Exception: 0 page faults
-Powering off...
+Console: 1949 characters output
+Key
